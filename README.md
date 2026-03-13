@@ -4,6 +4,8 @@ Two-player Snake game with neon Flash-era visuals and procedural audio. Built wi
 
 **[Play it now](https://kjellkod.github.io/snake/)**
 
+<img width="654" height="674" alt="Screenshot 2026-03-13 at 6 59 40 AM" src="https://github.com/user-attachments/assets/5bc8890d-7488-413b-89a8-01aecba7ecf1" />
+
 ## Quick Start
 
 ```bash
