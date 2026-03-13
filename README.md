@@ -21,8 +21,11 @@ Open http://localhost:5173 in your browser.
 |--------|-----|------|------|-------|
 | Player 1 | W | S | A | D |
 | Player 2 | ↑ | ↓ | ← | → |
+| Mobile | Tap above head | Tap below head | Tap left of head | Tap right of head |
 
 Click **Start** to begin. One player dying doesn't end the game — the survivor plays on.
+
+**Mobile**: Single-player works on mobile — tap anywhere on the canvas relative to the snake's head to steer. The canvas scales to fit your screen.
 
 ## Scripts
 
