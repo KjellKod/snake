@@ -12,6 +12,14 @@ export function App() {
   const { ensureAudio, handleGameEvent, startGameAudio, stopGameAudio } = useAudio();
 
   const pendingEventsRef = useRef<GameEvent[]>([]);
+  const [currentEvents, setCurrentEvents] = useState<GameEvent[]>([]);
+
+  useLayoutEffect(() => {
+    if (phase !== 'playing') return;
+    const drained = pendingEventsRef.current;
+    pendingEventsRef.current = [];
+    setCurrentEvents(drained);
+  });
 
   const onEvent = useCallback((event: GameEvent, state: GameState) => {
     pendingEventsRef.current.push(event);
@@ -54,14 +62,6 @@ export function App() {
       />
     );
   }
-
-  const [currentEvents, setCurrentEvents] = useState<GameEvent[]>([]);
-
-  useLayoutEffect(() => {
-    const drained = pendingEventsRef.current;
-    pendingEventsRef.current = [];
-    setCurrentEvents(drained);
-  });
 
   return (
     <div className="game-container">
