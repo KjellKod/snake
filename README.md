@@ -2,6 +2,8 @@
 
 Two-player Snake game with neon Flash-era visuals and procedural audio. Built with React, TypeScript, and Vite.
 
+**[Play it now](https://kjellkod.github.io/snake/)**
+
 ## Quick Start
 
 ```bash
