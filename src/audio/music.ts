@@ -3,7 +3,7 @@ import { getAudioContext, getMasterGain } from './audioEngine';
 let musicNodes: {
   oscillators: OscillatorNode[];
   gains: GainNode[];
-  intervalId: number | null;
+  timeoutId: number | null;
 } | null = null;
 
 let currentBpm = 120;
@@ -33,7 +33,7 @@ export function startMusic(): void {
   if (!ctx || !master) return;
 
   try {
-    musicNodes = { oscillators: [], gains: [], intervalId: null };
+    musicNodes = { oscillators: [], gains: [], timeoutId: null };
     currentBpm = 120;
     currentIntensity = 0;
     scheduleBeat(ctx, master);
@@ -50,8 +50,8 @@ export function updateMusicTempo(tickRate: number, baseTick: number, maxTick: nu
 
 export function stopMusic(): void {
   if (!musicNodes) return;
-  if (musicNodes.intervalId !== null) {
-    clearInterval(musicNodes.intervalId);
+  if (musicNodes.timeoutId !== null) {
+    clearTimeout(musicNodes.timeoutId);
   }
   for (const osc of musicNodes.oscillators) {
     try { osc.stop(); } catch { /* already stopped */ }
@@ -129,11 +129,10 @@ function scheduleBeat(ctx: AudioContext, master: GainNode): void {
     }
   };
 
-  // Use setInterval with dynamic tempo -- we clear and re-set on each beat
   const scheduleNext = () => {
     if (!musicNodes) return;
     const beatInterval = 60000 / currentBpm / 2; // 8th notes
-    musicNodes.intervalId = window.setTimeout(() => {
+    musicNodes.timeoutId = window.setTimeout(() => {
       scheduleOneBeat();
       scheduleNext();
     }, beatInterval);

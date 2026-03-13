@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useLayoutEffect } from 'react';
 import { GamePhase, GameEvent, GameState } from './engine/types';
 import { StartScreen } from './components/StartScreen';
 import { GameOverScreen } from './components/GameOverScreen';
@@ -55,9 +55,13 @@ export function App() {
     );
   }
 
-  // Drain pending events so each batch is consumed exactly once
-  const currentEvents = pendingEventsRef.current;
-  pendingEventsRef.current = [];
+  const [currentEvents, setCurrentEvents] = useState<GameEvent[]>([]);
+
+  useLayoutEffect(() => {
+    const drained = pendingEventsRef.current;
+    pendingEventsRef.current = [];
+    setCurrentEvents(drained);
+  });
 
   return (
     <div className="game-container">

@@ -18,6 +18,8 @@ export function GameCanvas({ gameState, events }: GameCanvasProps) {
   const shakeRef = useRef<ScreenShake>(createScreenShake(0, 0));
   const lastTimeRef = useRef(0);
   const rafRef = useRef(0);
+  const gameStateRef = useRef(gameState);
+  gameStateRef.current = gameState;
 
   // Handle events for visual effects
   useEffect(() => {
@@ -52,14 +54,14 @@ export function GameCanvas({ gameState, events }: GameCanvasProps) {
       particlesRef.current.update(dt);
       shakeRef.current = updateScreenShake(shakeRef.current, dt);
 
-      renderGame(ctx, gameState, particlesRef.current, shakeRef.current, timestamp / 1000);
+      renderGame(ctx, gameStateRef.current, particlesRef.current, shakeRef.current, timestamp / 1000);
 
       rafRef.current = requestAnimationFrame(render);
     };
 
     rafRef.current = requestAnimationFrame(render);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [gameState]);
+  }, []);
 
   return (
     <canvas
