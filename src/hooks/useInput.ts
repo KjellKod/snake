@@ -80,10 +80,16 @@ export function useInput(
       const canvas = ctx.canvasRef.current;
       if (!canvas) return;
 
-      e.preventDefault();
-
       const touch = e.touches[0];
       const rect = canvas.getBoundingClientRect();
+
+      // Ignore touches outside the canvas
+      if (
+        touch.clientX < rect.left || touch.clientX > rect.right ||
+        touch.clientY < rect.top || touch.clientY > rect.bottom
+      ) return;
+
+      e.preventDefault();
 
       // Touch position relative to the canvas display area
       const scaleX = canvas.width / rect.width;
