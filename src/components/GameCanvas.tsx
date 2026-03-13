@@ -33,7 +33,7 @@ export function GameCanvas({ gameState, events }: GameCanvasProps) {
           CANVAS_SIZE
         );
         const color = event.player === 0 ? '#00ffff' : '#ff00ff';
-        particlesRef.current.emit(center.x, center.y, 15, color);
+        particlesRef.current.emit(center.x, center.y, 25, color);
       }
       if (event.type === 'player-died') {
         shakeRef.current = createScreenShake(8, 0.4);

@@ -18,8 +18,8 @@ export class ParticlePool {
   emit(x: number, y: number, count: number, color: string): void {
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const speed = 50 + Math.random() * 150;
-      const life = 0.3 + Math.random() * 0.5;
+      const speed = 120 + Math.random() * 280;
+      const life = 0.5 + Math.random() * 0.7;
 
       const particle: Particle = {
         x,
@@ -27,7 +27,7 @@ export class ParticlePool {
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         alpha: 1,
-        size: 2 + Math.random() * 4,
+        size: 4 + Math.random() * 8,
         color,
         life,
         maxLife: life,
@@ -61,6 +61,8 @@ export class ParticlePool {
     for (const p of this.particles) {
       ctx.save();
       ctx.globalAlpha = p.alpha;
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 12;
       ctx.fillStyle = p.color;
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);

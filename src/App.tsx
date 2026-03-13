@@ -16,6 +16,7 @@ export function App() {
 
   useLayoutEffect(() => {
     if (phase !== 'playing') return;
+    if (pendingEventsRef.current.length === 0) return;
     const drained = pendingEventsRef.current;
     pendingEventsRef.current = [];
     setCurrentEvents(drained);
