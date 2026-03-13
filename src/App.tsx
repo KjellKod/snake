@@ -77,7 +77,7 @@ export function App() {
   return (
     <div className="game-container" style={{ position: 'relative' }}>
       <HUD scores={[gameState.players[0].score, gameState.players[1].score]} />
-      <GameCanvas gameState={gameState} events={currentEvents} />
+      <GameCanvas gameState={gameState} events={currentEvents} paused={paused} />
       {paused && (
         <div style={{
           position: 'absolute',

@@ -10,9 +10,10 @@ const CANVAS_SIZE = 600;
 interface GameCanvasProps {
   gameState: GameState;
   events: GameEvent[];
+  paused?: boolean;
 }
 
-export function GameCanvas({ gameState, events }: GameCanvasProps) {
+export function GameCanvas({ gameState, events, paused = false }: GameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef(new ParticlePool());
   const shakeRef = useRef<ScreenShake>(createScreenShake(0, 0));
@@ -20,6 +21,8 @@ export function GameCanvas({ gameState, events }: GameCanvasProps) {
   const rafRef = useRef(0);
   const gameStateRef = useRef(gameState);
   gameStateRef.current = gameState;
+  const pausedRef = useRef(paused);
+  pausedRef.current = paused;
 
   // Handle events for visual effects
   useEffect(() => {
@@ -51,10 +54,12 @@ export function GameCanvas({ gameState, events }: GameCanvasProps) {
       const dt = lastTimeRef.current === 0 ? 0.016 : (timestamp - lastTimeRef.current) / 1000;
       lastTimeRef.current = timestamp;
 
-      particlesRef.current.update(dt);
-      shakeRef.current = updateScreenShake(shakeRef.current, dt);
+      if (!pausedRef.current) {
+        particlesRef.current.update(dt);
+        shakeRef.current = updateScreenShake(shakeRef.current, dt);
+      }
 
-      renderGame(ctx, gameStateRef.current, particlesRef.current, shakeRef.current, timestamp / 1000);
+      renderGame(ctx, gameStateRef.current, particlesRef.current, shakeRef.current, pausedRef.current ? lastTimeRef.current : timestamp / 1000);
 
       rafRef.current = requestAnimationFrame(render);
     };
