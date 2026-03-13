@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { GameState, GameEvent } from '../engine/types';
 import { renderGame } from '../rendering/canvasRenderer';
 import { ParticlePool } from '../rendering/particles';
@@ -13,8 +13,11 @@ interface GameCanvasProps {
   paused?: boolean;
 }
 
-export function GameCanvas({ gameState, events, paused = false }: GameCanvasProps) {
+export const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
+function GameCanvas({ gameState, events, paused = false }, ref) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useImperativeHandle(ref, () => canvasRef.current!, []);
   const particlesRef = useRef(new ParticlePool());
   const shakeRef = useRef<ScreenShake>(createScreenShake(0, 0));
   const lastTimeRef = useRef(0);
@@ -75,4 +78,4 @@ export function GameCanvas({ gameState, events, paused = false }: GameCanvasProp
       height={CANVAS_SIZE}
     />
   );
-}
+});

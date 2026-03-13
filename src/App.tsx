@@ -9,6 +9,7 @@ import { useAudio } from './hooks/useAudio';
 
 export function App() {
   const [phase, setPhase] = useState<GamePhase>('start');
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const { ensureAudio, handleGameEvent, startGameAudio, stopGameAudio } = useAudio();
 
   const pendingEventsRef = useRef<GameEvent[]>([]);
@@ -31,7 +32,7 @@ export function App() {
     }
   }, [handleGameEvent]);
 
-  const { gameState, start, stop, paused, togglePause } = useGameLoop({ onEvent });
+  const { gameState, start, stop, paused, togglePause } = useGameLoop({ onEvent }, canvasRef);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -77,7 +78,7 @@ export function App() {
   return (
     <div className="game-container" style={{ position: 'relative' }}>
       <HUD scores={[gameState.players[0].score, gameState.players[1].score]} />
-      <GameCanvas gameState={gameState} events={currentEvents} paused={paused} />
+      <GameCanvas ref={canvasRef} gameState={gameState} events={currentEvents} paused={paused} />
       {paused && (
         <div style={{
           position: 'absolute',

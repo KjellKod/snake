@@ -1,13 +1,16 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
 import { GameState, TickInputs, GameEvent } from '../engine/types';
 import { createInitialState, tick } from '../engine/gameLoop';
-import { useInput } from './useInput';
+import { useInput, TouchContext } from './useInput';
 
 export interface GameLoopCallbacks {
   onEvent: (event: GameEvent, state: GameState) => void;
 }
 
-export function useGameLoop(callbacks: GameLoopCallbacks) {
+export function useGameLoop(
+  callbacks: GameLoopCallbacks,
+  canvasRef?: React.RefObject<HTMLCanvasElement | null>
+) {
   const [gameState, setGameState] = useState<GameState>(() => createInitialState());
   const stateRef = useRef(gameState);
   const rafRef = useRef<number>(0);
@@ -18,10 +21,18 @@ export function useGameLoop(callbacks: GameLoopCallbacks) {
 
   const isPlaying = gameState.phase === 'playing';
 
+  const touchContext: TouchContext | undefined = canvasRef ? {
+    canvasRef,
+    player1Head: gameState.players[0].snake.segments[0],
+    boardWidth: gameState.board.width,
+    boardHeight: gameState.board.height,
+  } : undefined;
+
   const inputRef = useInput(
     gameState.players[0].snake.direction,
     gameState.players[1].snake.direction,
-    isPlaying
+    isPlaying,
+    touchContext
   );
 
   // Keep stateRef in sync
