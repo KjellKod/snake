@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useLayoutEffect } from 'react';
+import { useState, useCallback, useRef, useLayoutEffect, useEffect } from 'react';
 import { GamePhase, GameEvent, GameState } from './engine/types';
 import { StartScreen } from './components/StartScreen';
 import { GameOverScreen } from './components/GameOverScreen';
@@ -31,7 +31,17 @@ export function App() {
     }
   }, [handleGameEvent]);
 
-  const { gameState, start, stop } = useGameLoop({ onEvent });
+  const { gameState, start, stop, paused, togglePause } = useGameLoop({ onEvent });
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'p' || e.key === 'P') {
+        if (phase === 'playing') togglePause();
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [phase, togglePause]);
 
   const handleStart = useCallback(() => {
     ensureAudio();
@@ -65,9 +75,22 @@ export function App() {
   }
 
   return (
-    <div className="game-container">
+    <div className="game-container" style={{ position: 'relative' }}>
       <HUD scores={[gameState.players[0].score, gameState.players[1].score]} />
       <GameCanvas gameState={gameState} events={currentEvents} />
+      {paused && (
+        <div style={{
+          position: 'absolute',
+          bottom: 12,
+          right: 16,
+          color: 'rgba(255,255,255,0.4)',
+          fontSize: 14,
+          fontFamily: 'monospace',
+          pointerEvents: 'none',
+        }}>
+          Paused
+        </div>
+      )}
     </div>
   );
 }

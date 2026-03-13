@@ -13,6 +13,8 @@ export function useGameLoop(callbacks: GameLoopCallbacks) {
   const rafRef = useRef<number>(0);
   const lastTickRef = useRef<number>(0);
   const runningRef = useRef(false);
+  const pausedRef = useRef(false);
+  const [paused, setPaused] = useState(false);
 
   const isPlaying = gameState.phase === 'playing';
 
@@ -27,6 +29,11 @@ export function useGameLoop(callbacks: GameLoopCallbacks) {
 
   const loop = useCallback((timestamp: number) => {
     if (!runningRef.current) return;
+
+    if (pausedRef.current) {
+      rafRef.current = requestAnimationFrame(loop);
+      return;
+    }
 
     const state = stateRef.current;
     if (state.phase !== 'playing') {
@@ -67,6 +74,11 @@ export function useGameLoop(callbacks: GameLoopCallbacks) {
     rafRef.current = requestAnimationFrame(loop);
   }, [loop]);
 
+  const togglePause = useCallback(() => {
+    pausedRef.current = !pausedRef.current;
+    setPaused(pausedRef.current);
+  }, []);
+
   const stop = useCallback(() => {
     runningRef.current = false;
     if (rafRef.current) {
@@ -84,5 +96,5 @@ export function useGameLoop(callbacks: GameLoopCallbacks) {
     };
   }, []);
 
-  return { gameState, start, stop };
+  return { gameState, start, stop, paused, togglePause };
 }
