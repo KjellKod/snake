@@ -23,7 +23,7 @@ export function GameOverScreen({ scores, onRestart }: GameOverScreenProps) {
         onClick={handleClick}
         onMouseEnter={playHoverSound}
       >
-        Play Again
+        Back to Settings
       </button>
     </div>
   );

@@ -120,7 +120,7 @@ export function tick(
     } else {
       for (let i = 0; i < collisionIndices.length; i++) {
         if (collisionIndices[i] === -1 || !newPlayers[i].snake.alive) continue;
-        applySlowdown(newPlayers, i === 0 ? 1 : 0, elapsedMs, events);
+        applySlowdown(newPlayers, i === 0 ? 1 : 0, elapsedMs, events, i);
       }
     }
   }
@@ -259,6 +259,7 @@ function applySlowdown(
   playerIndex: number,
   elapsedMs: number,
   events: GameEvent[],
+  sourcePlayer?: number,
 ): void {
   const player = players[playerIndex];
   if (!player.snake.alive || isPlayerInvincible(player, elapsedMs)) {
@@ -277,6 +278,7 @@ function applySlowdown(
     type: "effect-applied",
     player: playerIndex,
     effect: "slowdown",
+    sourcePlayer,
   });
 }
 

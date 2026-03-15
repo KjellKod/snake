@@ -70,7 +70,8 @@ describe("App", () => {
       .fn()
       .mockImplementationOnce(() => ["settings", setPhase])
       .mockImplementationOnce(() => [customSettings, setSettings])
-      .mockImplementationOnce(() => [[], setCurrentEvents]);
+      .mockImplementationOnce(() => [[], setCurrentEvents])
+      .mockImplementationOnce(() => [null, vi.fn()]);
     const useRef = vi
       .fn()
       .mockImplementationOnce(() => ({ current: null }))
@@ -157,7 +158,8 @@ describe("App", () => {
       .fn()
       .mockImplementationOnce(() => ["settings", setPhase])
       .mockImplementationOnce(() => [customSettings, setSettings])
-      .mockImplementationOnce(() => [[], setCurrentEvents]);
+      .mockImplementationOnce(() => [[], setCurrentEvents])
+      .mockImplementationOnce(() => [null, vi.fn()]);
     const useRef = vi
       .fn()
       .mockImplementationOnce(() => ({ current: null }))
@@ -227,7 +229,8 @@ describe("App", () => {
       .fn()
       .mockImplementationOnce(() => ["game-over", setPhase])
       .mockImplementationOnce(() => [customSettings, setSettings])
-      .mockImplementationOnce(() => [[], setCurrentEvents]);
+      .mockImplementationOnce(() => [[], setCurrentEvents])
+      .mockImplementationOnce(() => [null, vi.fn()]);
     const useRef = vi
       .fn()
       .mockImplementationOnce(() => ({ current: null }))

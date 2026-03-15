@@ -14,12 +14,44 @@ import {
 import { StartScreen } from "./components/StartScreen";
 import { GameOverScreen } from "./components/GameOverScreen";
 import { GameCanvas } from "./components/GameCanvas";
-import { HUD } from "./components/HUD";
+import { Announcement, HUD } from "./components/HUD";
 import { SettingsScreen } from "./components/SettingsScreen";
 import { useGameLoop } from "./hooks/useGameLoop";
 import { useAudio } from "./hooks/useAudio";
 
 type AppPhase = "start" | "settings" | "playing" | "game-over";
+const ANNOUNCEMENT_DURATION_MS = 4_800;
+
+function createAnnouncement(
+  event: GameEvent,
+  state: GameState,
+): Announcement | null {
+  if (event.type === "effect-applied" && event.effect === "slowdown") {
+    if (event.sourcePlayer !== undefined) {
+      return {
+        text: `P${event.sourcePlayer + 1} smashed P${event.player + 1}`,
+        tone: "hit",
+        expiresAt: state.elapsedMs + ANNOUNCEMENT_DURATION_MS,
+      };
+    }
+
+    return {
+      text: "Head-to-head crash",
+      tone: "hit",
+      expiresAt: state.elapsedMs + ANNOUNCEMENT_DURATION_MS,
+    };
+  }
+
+  if (event.type === "effect-applied" && event.effect === "invincibility") {
+    return {
+      text: `P${event.player + 1}, got a power up.`,
+      tone: "power-up",
+      expiresAt: state.elapsedMs + ANNOUNCEMENT_DURATION_MS,
+    };
+  }
+
+  return null;
+}
 
 export function App() {
   const [phase, setPhase] = useState<AppPhase>("start");
@@ -37,6 +69,7 @@ export function App() {
 
   const pendingEventsRef = useRef<GameEvent[]>([]);
   const [currentEvents, setCurrentEvents] = useState<GameEvent[]>([]);
+  const [announcement, setAnnouncement] = useState<Announcement | null>(null);
 
   useLayoutEffect(() => {
     if (phase !== "playing") return;
@@ -50,6 +83,10 @@ export function App() {
     (event: GameEvent, state: GameState) => {
       pendingEventsRef.current.push(event);
       handleGameEvent(event, state);
+      const nextAnnouncement = createAnnouncement(event, state);
+      if (nextAnnouncement) {
+        setAnnouncement(nextAnnouncement);
+      }
 
       if (event.type === "game-over") {
         setPhase("game-over");
@@ -79,6 +116,7 @@ export function App() {
     applySettings(settings);
     setPhase("playing");
     pendingEventsRef.current = [];
+    setAnnouncement(null);
     start(settings);
     startGameAudio(settings);
   }, [applySettings, ensureAudio, settings, start, startGameAudio]);
@@ -87,6 +125,7 @@ export function App() {
     stop();
     stopGameAudio();
     pendingEventsRef.current = [];
+    setAnnouncement(null);
     setPhase("settings");
   }, [stop, stopGameAudio]);
 
@@ -121,7 +160,7 @@ export function App() {
 
   return (
     <div className="game-container" style={{ position: "relative" }}>
-      <HUD gameState={gameState} />
+      <HUD gameState={gameState} announcement={announcement} />
       <GameCanvas
         ref={canvasRef}
         gameState={gameState}

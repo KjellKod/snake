@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { HUD, getStatusText } from "../../src/components/HUD";
+import { Announcement, HUD, getStatusText } from "../../src/components/HUD";
 import {
   createDefaultSettings,
   createPlayerEffects,
@@ -58,5 +58,21 @@ describe("HUD", () => {
     expect(markup).toContain("P2: 7");
     expect(markup).toContain("Slowed 4s");
     expect(markup).toContain("Normal");
+  });
+
+  it("renders an active announcement banner above the scores", () => {
+    const state = makeGameState();
+    const announcement: Announcement = {
+      text: "P1 smashed P2",
+      tone: "hit",
+      expiresAt: 7_000,
+    };
+
+    const markup = renderToStaticMarkup(
+      HUD({ gameState: state, announcement }),
+    );
+
+    expect(markup).toContain("announcement-banner hit");
+    expect(markup).toContain("P1 smashed P2");
   });
 });

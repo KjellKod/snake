@@ -7,7 +7,8 @@
   --text-primary: #ffffff;
   --text-secondary: #aaaacc;
   --glow-cyan: 0 0 10px rgba(0, 255, 255, 0.6), 0 0 20px rgba(0, 255, 255, 0.3);
-  --glow-magenta: 0 0 10px rgba(255, 0, 255, 0.6), 0 0 20px rgba(255, 0, 255, 0.3);
+  --glow-magenta:
+    0 0 10px rgba(255, 0, 255, 0.6), 0 0 20px rgba(255, 0, 255, 0.3);
 }
 
 * {
@@ -19,7 +20,7 @@
 body {
   background: var(--bg-darker);
   color: var(--text-primary);
-  font-family: 'Courier New', 'Lucida Console', monospace;
+  font-family: "Courier New", "Lucida Console", monospace;
   overflow: hidden;
   width: 100vw;
   height: 100vh;
@@ -58,8 +59,17 @@ body {
 }
 
 @keyframes titlePulse {
-  0%, 100% { opacity: 1; text-shadow: var(--glow-cyan); }
-  50% { opacity: 0.8; text-shadow: 0 0 20px rgba(0, 255, 255, 0.8), 0 0 40px rgba(0, 255, 255, 0.4); }
+  0%,
+  100% {
+    opacity: 1;
+    text-shadow: var(--glow-cyan);
+  }
+  50% {
+    opacity: 0.8;
+    text-shadow:
+      0 0 20px rgba(0, 255, 255, 0.8),
+      0 0 40px rgba(0, 255, 255, 0.4);
+  }
 }
 
 .start-screen .controls-info {
@@ -95,7 +105,9 @@ body {
 .start-button:hover,
 .settings-button:hover {
   background: rgba(0, 255, 255, 0.1);
-  box-shadow: 0 0 20px rgba(0, 255, 255, 0.6), 0 0 40px rgba(0, 255, 255, 0.3);
+  box-shadow:
+    0 0 20px rgba(0, 255, 255, 0.6),
+    0 0 40px rgba(0, 255, 255, 0.3);
 }
 
 .settings-button {
@@ -211,6 +223,36 @@ body {
   gap: 10px;
 }
 
+.announcement-banner {
+  min-height: 3.5rem;
+  padding: 14px 18px;
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+.announcement-banner.hit {
+  color: var(--neon-magenta);
+  border-color: rgba(255, 0, 255, 0.35);
+  box-shadow: var(--glow-magenta);
+}
+
+.announcement-banner.power-up {
+  color: var(--neon-yellow);
+  border-color: rgba(255, 255, 0, 0.35);
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.35);
+}
+
+.announcement-banner.is-fading {
+  opacity: 0.35;
+}
+
 .hud {
   display: flex;
   justify-content: space-between;
@@ -270,7 +312,9 @@ body {
 .game-over-screen h1 {
   font-size: 3rem;
   color: #ff3333;
-  text-shadow: 0 0 10px rgba(255, 50, 50, 0.6), 0 0 20px rgba(255, 50, 50, 0.3);
+  text-shadow:
+    0 0 10px rgba(255, 50, 50, 0.6),
+    0 0 20px rgba(255, 50, 50, 0.3);
   animation: titlePulse 1.5s ease-in-out infinite;
 }
 

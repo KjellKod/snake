@@ -80,6 +80,7 @@ export type GameEvent =
       type: "effect-applied";
       player: number;
       effect: "slowdown" | "invincibility";
+      sourcePlayer?: number;
     }
   | { type: "game-over" };
 

@@ -2,6 +2,13 @@ import { GameState, isPlayerInvincible, isPlayerSlowed } from "../engine/types";
 
 interface HUDProps {
   gameState: GameState;
+  announcement?: Announcement | null;
+}
+
+export interface Announcement {
+  text: string;
+  tone: "hit" | "power-up";
+  expiresAt: number;
 }
 
 export function formatSeconds(remainingMs: number): string {
@@ -30,9 +37,21 @@ export function getStatusText(
   return statuses.length > 0 ? statuses.join(" | ") : "Normal";
 }
 
-export function HUD({ gameState }: HUDProps) {
+export function HUD({ gameState, announcement }: HUDProps) {
+  const announcementRemaining = announcement
+    ? announcement.expiresAt - gameState.elapsedMs
+    : 0;
+  const activeAnnouncement =
+    announcement && announcementRemaining > 0 ? announcement : null;
+  const announcementClassName = activeAnnouncement
+    ? `announcement-banner ${activeAnnouncement.tone}${announcementRemaining <= 1800 ? " is-fading" : ""}`
+    : "";
+
   return (
     <div className="hud-shell">
+      {activeAnnouncement && (
+        <div className={announcementClassName}>{activeAnnouncement.text}</div>
+      )}
       <div className="hud">
         <div className="score player1">P1: {gameState.players[0].score}</div>
         <div className="score player2">P2: {gameState.players[1].score}</div>

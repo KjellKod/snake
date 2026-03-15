@@ -174,6 +174,7 @@ describe("tick with settings and power-ups", () => {
       type: "effect-applied",
       player: 1,
       effect: "slowdown",
+      sourcePlayer: 0,
     });
   });
 
