@@ -1,4 +1,3 @@
-
 interface ScoreBoardProps {
   scores: [number, number];
 }

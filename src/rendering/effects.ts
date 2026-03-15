@@ -4,7 +4,10 @@ export interface ScreenShake {
   elapsed: number;
 }
 
-export function createScreenShake(intensity: number, duration: number): ScreenShake {
+export function createScreenShake(
+  intensity: number,
+  duration: number,
+): ScreenShake {
   return { intensity, duration, elapsed: 0 };
 }
 
@@ -26,7 +29,7 @@ export function applyNeonGlow(
   ctx: CanvasRenderingContext2D,
   color: string,
   blur: number,
-  callback: () => void
+  callback: () => void,
 ): void {
   ctx.save();
   ctx.shadowColor = color;
@@ -39,20 +42,24 @@ export function drawAnimatedBackground(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
-  time: number
+  time: number,
 ): void {
   // Dark gradient background with subtle moving grid
   const gradient = ctx.createRadialGradient(
-    width / 2, height / 2, 0,
-    width / 2, height / 2, width * 0.7
+    width / 2,
+    height / 2,
+    0,
+    width / 2,
+    height / 2,
+    width * 0.7,
   );
-  gradient.addColorStop(0, '#0a0a1a');
-  gradient.addColorStop(1, '#000008');
+  gradient.addColorStop(0, "#0a0a1a");
+  gradient.addColorStop(1, "#000008");
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, width, height);
 
   // Subtle animated grid lines
-  ctx.strokeStyle = 'rgba(0, 255, 255, 0.03)';
+  ctx.strokeStyle = "rgba(0, 255, 255, 0.03)";
   ctx.lineWidth = 1;
   const gridSize = 30;
   const offset = (time * 10) % gridSize;

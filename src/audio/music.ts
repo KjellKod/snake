@@ -1,49 +1,109 @@
-import { getAudioContext, getMasterGain } from './audioEngine';
+import { getAudioContext, getMusicGain } from "./audioEngine";
+import { MusicMode } from "../engine/types";
+
+interface MusicModeConfig {
+  bassNotes: number[];
+  leadNotes: number[];
+  bassType: OscillatorType;
+  leadType: OscillatorType;
+  baseBpm: number;
+  maxBpm: number;
+}
 
 let musicNodes: {
-  oscillators: OscillatorNode[];
-  gains: GainNode[];
   timeoutId: number | null;
 } | null = null;
 
+let currentMode: MusicMode = "neon-arcade";
 let currentBpm = 120;
-let currentIntensity = 0; // 0..1
+let currentIntensity = 0;
+let beatIndex = 0;
 
-// Notes for a simple bass pattern (minor key, ominous)
-const BASS_NOTES = [65.41, 73.42, 82.41, 77.78]; // C2, D2, E2, Eb2
-const LEAD_NOTES = [261.63, 293.66, 329.63, 311.13, 261.63, 349.23, 329.63, 293.66];
+const MODE_CONFIG: Record<Exclude<MusicMode, "off">, MusicModeConfig> = {
+  "neon-arcade": {
+    bassNotes: [65.41, 73.42, 82.41, 77.78],
+    leadNotes: [261.63, 293.66, 329.63, 311.13, 261.63, 349.23, 329.63, 293.66],
+    bassType: "triangle",
+    leadType: "square",
+    baseBpm: 120,
+    maxBpm: 200,
+  },
+  "space-inspired": {
+    bassNotes: [55.0, 65.41, 58.27, 73.42],
+    leadNotes: [220.0, 246.94, 261.63, 293.66, 329.63, 293.66],
+    bassType: "sine",
+    leadType: "triangle",
+    baseBpm: 100,
+    maxBpm: 172,
+  },
+  "8-bit": {
+    bassNotes: [65.41, 82.41, 98.0, 123.47],
+    leadNotes: [523.25, 659.25, 587.33, 698.46, 523.25, 783.99],
+    bassType: "square",
+    leadType: "square",
+    baseBpm: 132,
+    maxBpm: 210,
+  },
+  "techno-trance": {
+    bassNotes: [61.74, 61.74, 73.42, 82.41],
+    leadNotes: [246.94, 293.66, 329.63, 369.99, 329.63, 293.66],
+    bassType: "sawtooth",
+    leadType: "sawtooth",
+    baseBpm: 126,
+    maxBpm: 208,
+  },
+};
 
-/**
- * Maps a game tick rate to BPM and intensity.
- * baseTick=8 -> BPM 120, intensity 0
- * maxTick=12 -> BPM 200, intensity 1
- */
-export function tickRateToMusicParams(tickRate: number, baseTick: number, maxTick: number): { bpm: number; intensity: number } {
-  const t = Math.max(0, Math.min(1, (tickRate - baseTick) / (maxTick - baseTick)));
+export function tickRateToMusicParams(
+  tickRate: number,
+  baseTick: number,
+  maxTick: number,
+  mode: MusicMode = currentMode,
+): { bpm: number; intensity: number } {
+  const clampedMode = mode === "off" ? "neon-arcade" : mode;
+  const config = MODE_CONFIG[clampedMode];
+  const t = Math.max(
+    0,
+    Math.min(1, (tickRate - baseTick) / (maxTick - baseTick)),
+  );
   return {
-    bpm: 120 + t * 80,
+    bpm: config.baseBpm + t * (config.maxBpm - config.baseBpm),
     intensity: t,
   };
 }
 
-export function startMusic(): void {
-  if (musicNodes) return;
+export function startMusic(mode: MusicMode): void {
+  currentMode = mode;
+  stopMusic();
+
+  if (mode === "off") {
+    return;
+  }
+
   const ctx = getAudioContext();
-  const master = getMasterGain();
-  if (!ctx || !master) return;
+  const musicGain = getMusicGain();
+  if (!ctx || !musicGain) return;
 
   try {
-    musicNodes = { oscillators: [], gains: [], timeoutId: null };
-    currentBpm = 120;
+    musicNodes = { timeoutId: null };
+    beatIndex = 0;
     currentIntensity = 0;
-    scheduleBeat(ctx, master);
+    currentBpm = MODE_CONFIG[mode].baseBpm;
+    scheduleBeat();
   } catch {
     // Silent fallback
   }
 }
 
-export function updateMusicTempo(tickRate: number, baseTick: number, maxTick: number): void {
-  const params = tickRateToMusicParams(tickRate, baseTick, maxTick);
+export function updateMusicTempo(
+  tickRate: number,
+  baseTick: number,
+  maxTick: number,
+  mode: MusicMode = currentMode,
+): void {
+  if (mode === "off") return;
+  const params = tickRateToMusicParams(tickRate, baseTick, maxTick, mode);
+  currentMode = mode;
   currentBpm = params.bpm;
   currentIntensity = params.intensity;
 }
@@ -53,43 +113,45 @@ export function stopMusic(): void {
   if (musicNodes.timeoutId !== null) {
     clearTimeout(musicNodes.timeoutId);
   }
-  for (const osc of musicNodes.oscillators) {
-    try { osc.stop(); } catch { /* already stopped */ }
-  }
   beatIndex = 0;
   musicNodes = null;
 }
 
-let beatIndex = 0;
+function scheduleBeat(): void {
+  if (!musicNodes || currentMode === "off") return;
 
-function scheduleBeat(ctx: AudioContext, master: GainNode): void {
-  if (!musicNodes) return;
-
-  const scheduleOneBeat = () => {
-    if (!musicNodes) return;
+  const playBeat = () => {
+    if (!musicNodes || currentMode === "off") return;
     const ctx2 = getAudioContext();
-    const master2 = getMasterGain();
-    if (!ctx2 || !master2) return;
+    const gainNode = getMusicGain();
+    if (!ctx2 || !gainNode) return;
+
+    const config = MODE_CONFIG[currentMode];
 
     try {
-      // Bass drum-like hit
       const bassOsc = ctx2.createOscillator();
       const bassGain = ctx2.createGain();
-      bassOsc.type = 'triangle';
-      const bassNote = BASS_NOTES[beatIndex % BASS_NOTES.length];
+      const bassNote = config.bassNotes[beatIndex % config.bassNotes.length];
+      bassOsc.type = config.bassType;
       bassOsc.frequency.setValueAtTime(bassNote, ctx2.currentTime);
-      bassOsc.frequency.exponentialRampToValueAtTime(bassNote * 0.5, ctx2.currentTime + 0.1);
-      const bassVol = 0.25 + currentIntensity * 0.15;
-      bassGain.gain.setValueAtTime(bassVol, ctx2.currentTime);
-      bassGain.gain.exponentialRampToValueAtTime(0.001, ctx2.currentTime + 0.15);
+      bassOsc.frequency.exponentialRampToValueAtTime(
+        bassNote * 0.5,
+        ctx2.currentTime + 0.1,
+      );
+      bassGain.gain.setValueAtTime(
+        0.2 + currentIntensity * 0.18,
+        ctx2.currentTime,
+      );
+      bassGain.gain.exponentialRampToValueAtTime(
+        0.001,
+        ctx2.currentTime + 0.15,
+      );
       bassOsc.connect(bassGain);
-      bassGain.connect(master2);
+      bassGain.connect(gainNode);
       bassOsc.start(ctx2.currentTime);
       bassOsc.stop(ctx2.currentTime + 0.15);
 
-      // Hi-hat on every other beat (more frequent at higher intensity)
-      const hatFrequency = currentIntensity > 0.3 ? 1 : 2;
-      if (beatIndex % hatFrequency === 0) {
+      if (beatIndex % (currentIntensity > 0.35 ? 1 : 2) === 0) {
         const bufferSize = Math.floor(ctx2.sampleRate * 0.03);
         const buffer = ctx2.createBuffer(1, bufferSize, ctx2.sampleRate);
         const data = buffer.getChannelData(0);
@@ -97,28 +159,37 @@ function scheduleBeat(ctx: AudioContext, master: GainNode): void {
           data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
         }
         const hatSource = ctx2.createBufferSource();
-        hatSource.buffer = buffer;
         const hatGain = ctx2.createGain();
-        const hatVol = 0.08 + currentIntensity * 0.12;
-        hatGain.gain.setValueAtTime(hatVol, ctx2.currentTime);
-        hatGain.gain.exponentialRampToValueAtTime(0.001, ctx2.currentTime + 0.03);
+        hatSource.buffer = buffer;
+        hatGain.gain.setValueAtTime(
+          0.06 + currentIntensity * 0.12,
+          ctx2.currentTime,
+        );
+        hatGain.gain.exponentialRampToValueAtTime(
+          0.001,
+          ctx2.currentTime + 0.03,
+        );
         hatSource.connect(hatGain);
-        hatGain.connect(master2);
+        hatGain.connect(gainNode);
         hatSource.start(ctx2.currentTime);
       }
 
-      // Lead synth layer (only at higher intensity)
-      if (currentIntensity > 0.2) {
+      if (currentIntensity > 0.15) {
         const leadOsc = ctx2.createOscillator();
         const leadGain = ctx2.createGain();
-        leadOsc.type = 'square';
-        const leadNote = LEAD_NOTES[beatIndex % LEAD_NOTES.length];
+        const leadNote = config.leadNotes[beatIndex % config.leadNotes.length];
+        leadOsc.type = config.leadType;
         leadOsc.frequency.setValueAtTime(leadNote, ctx2.currentTime);
-        const leadVol = 0.06 + (currentIntensity - 0.2) * 0.15;
-        leadGain.gain.setValueAtTime(leadVol, ctx2.currentTime);
-        leadGain.gain.exponentialRampToValueAtTime(0.001, ctx2.currentTime + 0.08);
+        leadGain.gain.setValueAtTime(
+          0.05 + currentIntensity * 0.12,
+          ctx2.currentTime,
+        );
+        leadGain.gain.exponentialRampToValueAtTime(
+          0.001,
+          ctx2.currentTime + 0.08,
+        );
         leadOsc.connect(leadGain);
-        leadGain.connect(master2);
+        leadGain.connect(gainNode);
         leadOsc.start(ctx2.currentTime);
         leadOsc.stop(ctx2.currentTime + 0.08);
       }
@@ -131,14 +202,14 @@ function scheduleBeat(ctx: AudioContext, master: GainNode): void {
 
   const scheduleNext = () => {
     if (!musicNodes) return;
-    const beatInterval = 60000 / currentBpm / 2; // 8th notes
+    const beatInterval = 60000 / currentBpm / 2;
     musicNodes.timeoutId = window.setTimeout(() => {
-      scheduleOneBeat();
+      playBeat();
       scheduleNext();
     }, beatInterval);
   };
 
-  scheduleOneBeat();
+  playBeat();
   scheduleNext();
 }
 

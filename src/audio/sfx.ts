@@ -1,20 +1,20 @@
-import { getAudioContext, getMasterGain } from './audioEngine';
+import { getAudioContext, getSfxGain } from "./audioEngine";
 
 export function playEatSound(): void {
   const ctx = getAudioContext();
-  const master = getMasterGain();
-  if (!ctx || !master) return;
+  const sfxGain = getSfxGain();
+  if (!ctx || !sfxGain) return;
 
   try {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.type = 'sine';
+    osc.type = "sine";
     osc.frequency.setValueAtTime(600, ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
     gain.gain.setValueAtTime(0.12, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
     osc.connect(gain);
-    gain.connect(master);
+    gain.connect(sfxGain);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.15);
   } catch {
@@ -24,8 +24,8 @@ export function playEatSound(): void {
 
 export function playCrashSound(): void {
   const ctx = getAudioContext();
-  const master = getMasterGain();
-  if (!ctx || !master) return;
+  const sfxGain = getSfxGain();
+  if (!ctx || !sfxGain) return;
 
   try {
     // Noise burst for crash
@@ -41,7 +41,7 @@ export function playCrashSound(): void {
     gain.gain.setValueAtTime(0.12, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
     source.connect(gain);
-    gain.connect(master);
+    gain.connect(sfxGain);
     source.start(ctx.currentTime);
   } catch {
     // Silently fail
@@ -50,20 +50,23 @@ export function playCrashSound(): void {
 
 export function playGameOverSound(): void {
   const ctx = getAudioContext();
-  const master = getMasterGain();
-  if (!ctx || !master) return;
+  const sfxGain = getSfxGain();
+  if (!ctx || !sfxGain) return;
 
   try {
     const notes = [400, 350, 300, 200];
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = 'sawtooth';
+      osc.type = "sawtooth";
       osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.2);
       gain.gain.setValueAtTime(0.1, ctx.currentTime + i * 0.2);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.2 + 0.3);
+      gain.gain.exponentialRampToValueAtTime(
+        0.01,
+        ctx.currentTime + i * 0.2 + 0.3,
+      );
       osc.connect(gain);
-      gain.connect(master);
+      gain.connect(sfxGain);
       osc.start(ctx.currentTime + i * 0.2);
       osc.stop(ctx.currentTime + i * 0.2 + 0.3);
     });
