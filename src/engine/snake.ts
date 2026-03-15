@@ -1,4 +1,4 @@
-import { Direction, Position, Snake } from './types';
+import { Direction, Position, Snake } from "./types";
 
 export function createSnake(startPos: Position, direction: Direction): Snake {
   return {
@@ -37,21 +37,28 @@ export function checkSelfCollision(snake: Snake): boolean {
   return snake.segments.slice(1).some((s) => s.x === head.x && s.y === head.y);
 }
 
-export function isOppositeDirection(current: Direction, next: Direction): boolean {
+export function isOppositeDirection(
+  current: Direction,
+  next: Direction,
+): boolean {
   const opposites: Record<Direction, Direction> = {
-    up: 'down',
-    down: 'up',
-    left: 'right',
-    right: 'left',
+    up: "down",
+    down: "up",
+    left: "right",
+    right: "left",
   };
   return opposites[current] === next;
 }
 
 function directionDelta(direction: Direction): Position {
   switch (direction) {
-    case 'up':    return { x: 0, y: -1 };
-    case 'down':  return { x: 0, y: 1 };
-    case 'left':  return { x: -1, y: 0 };
-    case 'right': return { x: 1, y: 0 };
+    case "up":
+      return { x: 0, y: -1 };
+    case "down":
+      return { x: 0, y: 1 };
+    case "left":
+      return { x: -1, y: 0 };
+    case "right":
+      return { x: 1, y: 0 };
   }
 }

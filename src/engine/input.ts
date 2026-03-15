@@ -1,28 +1,31 @@
-import { Direction } from './types';
-import { isOppositeDirection } from './snake';
+import { Direction } from "./types";
+import { isOppositeDirection } from "./snake";
 
 const PLAYER1_KEYS: Record<string, Direction> = {
-  KeyW: 'up',
-  KeyA: 'left',
-  KeyS: 'down',
-  KeyD: 'right',
+  KeyW: "up",
+  KeyA: "left",
+  KeyS: "down",
+  KeyD: "right",
 };
 
 const PLAYER2_KEYS: Record<string, Direction> = {
-  ArrowUp: 'up',
-  ArrowLeft: 'left',
-  ArrowDown: 'down',
-  ArrowRight: 'right',
+  ArrowUp: "up",
+  ArrowLeft: "left",
+  ArrowDown: "down",
+  ArrowRight: "right",
 };
 
-export function mapKeyToDirection(code: string, player: 1 | 2): Direction | null {
+export function mapKeyToDirection(
+  code: string,
+  player: 1 | 2,
+): Direction | null {
   const map = player === 1 ? PLAYER1_KEYS : PLAYER2_KEYS;
   return map[code] ?? null;
 }
 
 export function resolveDirection(
   newDir: Direction,
-  currentDir: Direction
+  currentDir: Direction,
 ): Direction | null {
   if (isOppositeDirection(currentDir, newDir)) {
     return null;
@@ -40,8 +43,14 @@ export function createInputBuffer(): InputBuffer {
 }
 
 const GAME_KEYS = new Set([
-  'KeyW', 'KeyA', 'KeyS', 'KeyD',
-  'ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight',
+  "KeyW",
+  "KeyA",
+  "KeyS",
+  "KeyD",
+  "ArrowUp",
+  "ArrowLeft",
+  "ArrowDown",
+  "ArrowRight",
 ]);
 
 export function isGameKey(code: string): boolean {

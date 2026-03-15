@@ -1,141 +1,336 @@
-import { GameState, TickInputs, TickResult, GameEvent, Direction } from './types';
-import { moveSnake, growSnake, checkSelfCollision } from './snake';
-import { isOutOfBounds, spawnFood, checkSnakeCollision } from './board';
-import { createBoard } from './board';
-import { createSnake } from './snake';
+import {
+  GameState,
+  TickInputs,
+  TickResult,
+  GameEvent,
+  GameSettings,
+  FoodState,
+  PlayerState,
+  createDefaultSettings,
+  createPlayerEffects,
+  isPlayerInvincible,
+  isPlayerSlowed,
+} from "./types";
+import { moveSnake, growSnake, checkSelfCollision } from "./snake";
+import { isOutOfBounds, spawnFood, wrapPosition } from "./board";
+import { createBoard } from "./board";
+import { createSnake } from "./snake";
 
 const DEFAULT_BOARD_WIDTH = 20;
 const DEFAULT_BOARD_HEIGHT = 20;
 const BASE_TICK_RATE = 8;
 const MAX_TICK_RATE = 12;
+const SLOWDOWN_DURATION_MS = 15_000;
+const INVINCIBILITY_DURATION_MS = 15_000;
+const POWER_UP_INTERVAL = 10;
 
-export function createInitialState(): GameState {
+export function createInitialState(
+  settings: GameSettings = createDefaultSettings(),
+): GameState {
   const board = createBoard(DEFAULT_BOARD_WIDTH, DEFAULT_BOARD_HEIGHT);
-  const snake1 = createSnake({ x: 3, y: 10 }, 'right');
-  const snake2 = createSnake({ x: 16, y: 10 }, 'left');
-
-  const allSegments = [...snake1.segments, ...snake2.segments];
-  const food = spawnFood(board, allSegments);
+  const snake1 = createSnake({ x: 3, y: 10 }, "right");
+  const snake2 = createSnake({ x: 16, y: 10 }, "left");
+  const players: [PlayerState, PlayerState] = [
+    { snake: snake1, score: 0, effects: createPlayerEffects() },
+    { snake: snake2, score: 0, effects: createPlayerEffects() },
+  ];
 
   return {
-    phase: 'playing',
+    phase: "playing",
     board,
-    players: [
-      { snake: snake1, score: 0 },
-      { snake: snake2, score: 0 },
-    ],
-    food,
+    players,
+    food: spawnFoodState(board, players, settings, 1),
     tickRate: BASE_TICK_RATE,
+    settings,
+    elapsedMs: 0,
   };
 }
 
-export function tick(state: GameState, inputs: TickInputs): TickResult {
-  if (state.phase !== 'playing') {
+export function tick(
+  state: GameState,
+  inputs: TickInputs,
+  deltaMs = 1000 / state.tickRate,
+): TickResult {
+  if (state.phase !== "playing") {
     return { state, events: [] };
   }
 
+  const elapsedMs = state.elapsedMs + deltaMs;
   const events: GameEvent[] = [];
-  let newState = { ...state };
-  const newPlayers = [...state.players] as [typeof state.players[0], typeof state.players[1]];
+  const newPlayers = clonePlayers(state.players);
 
-  // Move each living player
-  for (let i = 0; i < 2; i++) {
-    const player = newPlayers[i];
-    if (!player.snake.alive) continue;
-
-    const dir = inputs.directions[i] ?? player.snake.direction;
-    const movedSnake = moveSnake(player.snake, dir);
-    newPlayers[i] = { ...player, snake: movedSnake };
+  for (let i = 0; i < newPlayers.length; i++) {
+    newPlayers[i] = advancePlayer(
+      newPlayers[i],
+      inputs.directions[i],
+      state,
+      elapsedMs,
+    );
   }
 
-  // Detect head-on-head collision before sequential processing
-  const head0 = newPlayers[0].snake.segments[0];
-  const head1 = newPlayers[1].snake.segments[0];
-  const headOnHead = newPlayers[0].snake.alive && newPlayers[1].snake.alive &&
-    head0.x === head1.x && head0.y === head1.y;
-
-  // Check collisions for each living player
   const killFlags = [false, false];
-  for (let i = 0; i < 2; i++) {
+  const collisionIndices = [
+    getOtherSnakeCollisionIndex(newPlayers[0], newPlayers[1]),
+    getOtherSnakeCollisionIndex(newPlayers[1], newPlayers[0]),
+  ] as const;
+  const headOnHead = isHeadOnHead(newPlayers);
+
+  for (let i = 0; i < newPlayers.length; i++) {
     const player = newPlayers[i];
     if (!player.snake.alive) continue;
 
-    const otherIndex = i === 0 ? 1 : 0;
-
-    // Wall collision
-    if (isOutOfBounds(player.snake.segments[0], state.board)) {
+    const invincible = isPlayerInvincible(player, elapsedMs);
+    if (isOutOfBounds(player.snake.segments[0], state.board) && !invincible) {
       killFlags[i] = true;
       continue;
     }
 
-    // Self collision
-    if (checkSelfCollision(player.snake)) {
+    if (checkSelfCollision(player.snake) && !invincible) {
       killFlags[i] = true;
       continue;
     }
 
-    // Head-on-head collision: both die
+    if (!state.settings.otherSnakeLethal) {
+      continue;
+    }
+
+    if (headOnHead && !invincible) {
+      killFlags[i] = true;
+      continue;
+    }
+
+    if (collisionIndices[i] !== -1 && !invincible) {
+      killFlags[i] = true;
+    }
+  }
+
+  for (let i = 0; i < killFlags.length; i++) {
+    if (!killFlags[i]) continue;
+    newPlayers[i] = {
+      ...newPlayers[i],
+      snake: { ...newPlayers[i].snake, alive: false },
+    };
+    events.push({ type: "player-died", player: i });
+  }
+
+  if (!state.settings.otherSnakeLethal) {
     if (headOnHead) {
-      killFlags[i] = true;
-      continue;
-    }
-
-    // Collision with other snake (body)
-    if (checkSnakeCollision(player.snake, newPlayers[otherIndex].snake)) {
-      killFlags[i] = true;
-      continue;
-    }
-  }
-
-  // Apply deaths after all collision checks
-  for (let i = 0; i < 2; i++) {
-    if (killFlags[i]) {
-      newPlayers[i] = { ...newPlayers[i], snake: { ...newPlayers[i].snake, alive: false } };
-      events.push({ type: 'player-died', player: i });
+      applySlowdown(newPlayers, 0, elapsedMs, events);
+      applySlowdown(newPlayers, 1, elapsedMs, events);
+    } else {
+      for (let i = 0; i < collisionIndices.length; i++) {
+        if (collisionIndices[i] === -1 || !newPlayers[i].snake.alive) continue;
+        applySlowdown(newPlayers, i === 0 ? 1 : 0, elapsedMs, events, i);
+      }
     }
   }
 
-  // Check food consumption for living players
   let currentFood = state.food;
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < newPlayers.length; i++) {
     const player = newPlayers[i];
     if (!player.snake.alive) continue;
 
     const head = player.snake.segments[0];
-    if (head.x === currentFood.x && head.y === currentFood.y) {
-      const grownSnake = growSnake(player.snake);
-      newPlayers[i] = { ...player, snake: grownSnake, score: player.score + 1 };
-      events.push({ type: 'food-eaten', player: i, position: currentFood });
+    if (!samePosition(head, currentFood.position)) continue;
 
-      const allSegments = [
-        ...newPlayers[0].snake.segments,
-        ...newPlayers[1].snake.segments,
-      ];
-      currentFood = spawnFood(state.board, allSegments);
+    let updatedPlayer: PlayerState = {
+      ...player,
+      snake: growSnake(player.snake),
+      score: player.score + 1,
+    };
+    events.push({
+      type: "food-eaten",
+      player: i,
+      position: currentFood.position,
+      kind: currentFood.kind,
+    });
+
+    if (currentFood.kind === "power-up") {
+      updatedPlayer = {
+        ...updatedPlayer,
+        effects: {
+          ...updatedPlayer.effects,
+          invincibleUntilMs: elapsedMs + INVINCIBILITY_DURATION_MS,
+        },
+      };
+      events.push({
+        type: "effect-applied",
+        player: i,
+        effect: "invincibility",
+      });
     }
+
+    newPlayers[i] = updatedPlayer;
+    currentFood = spawnFoodState(
+      state.board,
+      newPlayers,
+      state.settings,
+      currentFood.spawnIndex + 1,
+    );
   }
 
-  // Check if both players are dead
   const bothDead = !newPlayers[0].snake.alive && !newPlayers[1].snake.alive;
-
-  // Calculate dynamic tick rate based on total snake length
-  const totalLength = newPlayers[0].snake.segments.length + newPlayers[1].snake.segments.length;
+  const totalLength =
+    newPlayers[0].snake.segments.length + newPlayers[1].snake.segments.length;
   const speedBoost = Math.floor(totalLength / 5) * 0.5;
-  const newTickRate = Math.min(BASE_TICK_RATE + speedBoost, MAX_TICK_RATE);
+  const tickRate = state.settings.monoSpeed
+    ? BASE_TICK_RATE
+    : Math.min(BASE_TICK_RATE + speedBoost, MAX_TICK_RATE);
 
-  newState = {
-    ...newState,
+  const nextState: GameState = {
+    ...state,
     players: [newPlayers[0], newPlayers[1]],
     food: currentFood,
-    phase: bothDead ? 'game-over' : 'playing',
-    tickRate: newTickRate,
+    phase: bothDead ? "game-over" : "playing",
+    tickRate,
+    elapsedMs,
   };
 
   if (bothDead) {
-    events.push({ type: 'game-over' });
+    events.push({ type: "game-over" });
   }
 
-  return { state: newState, events };
+  return { state: nextState, events };
 }
 
-export { BASE_TICK_RATE, MAX_TICK_RATE };
+function advancePlayer(
+  player: PlayerState,
+  nextDirection: TickInputs["directions"][number],
+  state: GameState,
+  elapsedMs: number,
+): PlayerState {
+  if (!player.snake.alive) {
+    return player;
+  }
+
+  const direction = nextDirection ?? player.snake.direction;
+  const slowed = isPlayerSlowed(player, elapsedMs);
+  const shouldMove = !slowed || player.effects.slowMoveOnNextTick;
+  const effects = slowed
+    ? {
+        ...player.effects,
+        slowMoveOnNextTick: !player.effects.slowMoveOnNextTick,
+      }
+    : { ...player.effects, slowMoveOnNextTick: true };
+
+  let snake = shouldMove
+    ? moveSnake(player.snake, direction)
+    : { ...player.snake, direction };
+  const invincible = isPlayerInvincible(player, elapsedMs);
+  if (
+    isOutOfBounds(snake.segments[0], state.board) &&
+    (invincible || !state.settings.wallsLethal)
+  ) {
+    snake = {
+      ...snake,
+      segments: [
+        wrapPosition(snake.segments[0], state.board),
+        ...snake.segments.slice(1),
+      ],
+    };
+  }
+
+  return {
+    ...player,
+    snake,
+    effects,
+  };
+}
+
+function spawnFoodState(
+  board: GameState["board"],
+  players: GameState["players"],
+  settings: GameSettings,
+  spawnIndex: number,
+): FoodState {
+  const occupied = players.flatMap((player) => player.snake.segments);
+  return {
+    position: spawnFood(board, occupied),
+    kind:
+      settings.powerUpsEnabled && spawnIndex % POWER_UP_INTERVAL === 0
+        ? "power-up"
+        : "normal",
+    spawnIndex,
+  };
+}
+
+function applySlowdown(
+  players: [PlayerState, PlayerState],
+  playerIndex: number,
+  elapsedMs: number,
+  events: GameEvent[],
+  sourcePlayer?: number,
+): void {
+  const player = players[playerIndex];
+  if (!player.snake.alive || isPlayerInvincible(player, elapsedMs)) {
+    return;
+  }
+
+  players[playerIndex] = {
+    ...player,
+    effects: {
+      ...player.effects,
+      slowUntilMs: elapsedMs + SLOWDOWN_DURATION_MS,
+      slowMoveOnNextTick: true,
+    },
+  };
+  events.push({
+    type: "effect-applied",
+    player: playerIndex,
+    effect: "slowdown",
+    sourcePlayer,
+  });
+}
+
+function clonePlayers(
+  players: GameState["players"],
+): [PlayerState, PlayerState] {
+  return players.map((player) => ({
+    ...player,
+    snake: {
+      ...player.snake,
+      segments: player.snake.segments.map((segment) => ({ ...segment })),
+    },
+    effects: { ...player.effects },
+  })) as [PlayerState, PlayerState];
+}
+
+function getOtherSnakeCollisionIndex(
+  player: PlayerState,
+  otherPlayer: PlayerState,
+): number {
+  if (!player.snake.alive || !otherPlayer.snake.alive) {
+    return -1;
+  }
+
+  const head = player.snake.segments[0];
+  return otherPlayer.snake.segments.findIndex((segment) =>
+    samePosition(segment, head),
+  );
+}
+
+function isHeadOnHead(players: [PlayerState, PlayerState]): boolean {
+  if (!players[0].snake.alive || !players[1].snake.alive) {
+    return false;
+  }
+
+  return samePosition(
+    players[0].snake.segments[0],
+    players[1].snake.segments[0],
+  );
+}
+
+function samePosition(
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+): boolean {
+  return a.x === b.x && a.y === b.y;
+}
+
+export {
+  BASE_TICK_RATE,
+  MAX_TICK_RATE,
+  SLOWDOWN_DURATION_MS,
+  INVINCIBILITY_DURATION_MS,
+  POWER_UP_INTERVAL,
+};

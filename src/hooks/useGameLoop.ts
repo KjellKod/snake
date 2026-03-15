@@ -1,7 +1,13 @@
-import { useRef, useCallback, useEffect, useState } from 'react';
-import { GameState, TickInputs, GameEvent } from '../engine/types';
-import { createInitialState, tick } from '../engine/gameLoop';
-import { useInput, TouchContext } from './useInput';
+import { useRef, useCallback, useEffect, useState } from "react";
+import {
+  GameState,
+  TickInputs,
+  GameEvent,
+  GameSettings,
+  createDefaultSettings,
+} from "../engine/types";
+import { createInitialState, tick } from "../engine/gameLoop";
+import { useInput, TouchContext } from "./useInput";
 
 export interface GameLoopCallbacks {
   onEvent: (event: GameEvent, state: GameState) => void;
@@ -9,9 +15,12 @@ export interface GameLoopCallbacks {
 
 export function useGameLoop(
   callbacks: GameLoopCallbacks,
-  canvasRef?: React.RefObject<HTMLCanvasElement | null>
+  canvasRef?: React.RefObject<HTMLCanvasElement | null>,
+  inputEnabled = true,
 ) {
-  const [gameState, setGameState] = useState<GameState>(() => createInitialState());
+  const [gameState, setGameState] = useState<GameState>(() =>
+    createInitialState(createDefaultSettings()),
+  );
   const stateRef = useRef(gameState);
   const rafRef = useRef<number>(0);
   const lastTickRef = useRef<number>(0);
@@ -19,71 +28,89 @@ export function useGameLoop(
   const pausedRef = useRef(false);
   const [paused, setPaused] = useState(false);
 
-  const isPlaying = gameState.phase === 'playing';
+  const isPlaying = inputEnabled && gameState.phase === "playing";
 
-  const touchContext: TouchContext | undefined = canvasRef ? {
-    canvasRef,
-    player1Head: gameState.players[0].snake.segments[0],
-    boardWidth: gameState.board.width,
-    boardHeight: gameState.board.height,
-  } : undefined;
+  const touchContext: TouchContext | undefined = canvasRef
+    ? {
+        canvasRef,
+        player1Head: gameState.players[0].snake.segments[0],
+        boardWidth: gameState.board.width,
+        boardHeight: gameState.board.height,
+      }
+    : undefined;
 
   const inputRef = useInput(
     gameState.players[0].snake.direction,
     gameState.players[1].snake.direction,
     isPlaying,
-    touchContext
+    touchContext,
   );
 
   // Keep stateRef in sync
   stateRef.current = gameState;
 
-  const loop = useCallback((timestamp: number) => {
-    if (!runningRef.current) return;
+  const loop = useCallback(
+    (timestamp: number) => {
+      if (!runningRef.current) return;
 
-    if (pausedRef.current) {
+      if (pausedRef.current) {
+        lastTickRef.current = timestamp;
+        rafRef.current = requestAnimationFrame(loop);
+        return;
+      }
+
+      const state = stateRef.current;
+      if (state.phase !== "playing") {
+        rafRef.current = requestAnimationFrame(loop);
+        return;
+      }
+
+      const tickInterval = 1000 / state.tickRate;
+      if (timestamp - lastTickRef.current >= tickInterval) {
+        const deltaMs =
+          lastTickRef.current === 0
+            ? tickInterval
+            : timestamp - lastTickRef.current;
+        lastTickRef.current = timestamp;
+
+        const inputs: TickInputs = {
+          directions: [
+            inputRef.current.player1Dir,
+            inputRef.current.player2Dir,
+          ],
+        };
+
+        // Clear input buffer after reading
+        inputRef.current.player1Dir = null;
+        inputRef.current.player2Dir = null;
+
+        const result = tick(state, inputs, deltaMs);
+        stateRef.current = result.state;
+        setGameState(result.state);
+
+        for (const event of result.events) {
+          callbacks.onEvent(event, result.state);
+        }
+      }
+
       rafRef.current = requestAnimationFrame(loop);
-      return;
-    }
+    },
+    [callbacks, inputRef],
+  );
 
-    const state = stateRef.current;
-    if (state.phase !== 'playing') {
-      rafRef.current = requestAnimationFrame(loop);
-      return;
-    }
-
-    const tickInterval = 1000 / state.tickRate;
-    if (timestamp - lastTickRef.current >= tickInterval) {
-      lastTickRef.current = timestamp;
-
-      const inputs: TickInputs = {
-        directions: [inputRef.current.player1Dir, inputRef.current.player2Dir],
-      };
-
-      // Clear input buffer after reading
+  const start = useCallback(
+    (settings: GameSettings = createDefaultSettings()) => {
+      const newState = createInitialState(settings);
+      stateRef.current = newState;
+      setGameState(newState);
       inputRef.current.player1Dir = null;
       inputRef.current.player2Dir = null;
-
-      const result = tick(state, inputs);
-      stateRef.current = result.state;
-      setGameState(result.state);
-
-      for (const event of result.events) {
-        callbacks.onEvent(event, result.state);
-      }
-    }
-
-    rafRef.current = requestAnimationFrame(loop);
-  }, [callbacks, inputRef]);
-
-  const start = useCallback(() => {
-    const newState = createInitialState();
-    stateRef.current = newState;
-    setGameState(newState);
-    lastTickRef.current = 0;
-    runningRef.current = true;
-    rafRef.current = requestAnimationFrame(loop);
-  }, [loop]);
+      lastTickRef.current = 0;
+      runningRef.current = true;
+      rafRef.current = requestAnimationFrame(loop);
+    },
+    [inputRef, loop],
+  );
 
   const togglePause = useCallback(() => {
     pausedRef.current = !pausedRef.current;

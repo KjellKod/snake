@@ -1,4 +1,4 @@
-import { playHoverSound, playClickSound } from '../audio/uiSounds';
+import { playHoverSound, playClickSound } from "../audio/uiSounds";
 
 interface GameOverScreenProps {
   scores: [number, number];
@@ -15,19 +15,15 @@ export function GameOverScreen({ scores, onRestart }: GameOverScreenProps) {
     <div className="game-over-screen">
       <h1>GAME OVER</h1>
       <div className="scores">
-        <div className="final-score player1">
-          P1: {scores[0]}
-        </div>
-        <div className="final-score player2">
-          P2: {scores[1]}
-        </div>
+        <div className="final-score player1">P1: {scores[0]}</div>
+        <div className="final-score player2">P2: {scores[1]}</div>
       </div>
       <button
         className="restart-button"
         onClick={handleClick}
         onMouseEnter={playHoverSound}
       >
-        Play Again
+        Back to Settings
       </button>
     </div>
   );

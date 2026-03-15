@@ -1,49 +1,270 @@
-import { getAudioContext, getMasterGain } from './audioEngine';
+import { getAudioContext, getMusicGain } from "./audioEngine";
+import { MusicMode } from "../engine/types";
+
+interface PhraseStep {
+  note: number | null;
+  length: number;
+  accent?: number;
+  glide?: number;
+}
+
+interface ChordStep {
+  notes: number[];
+  length: number;
+  accent?: number;
+}
+
+interface MusicModeConfig {
+  bassPattern: number[];
+  leadPhraseA: PhraseStep[];
+  leadPhraseB: PhraseStep[];
+  harmonyPattern: Array<ChordStep | null>;
+  bassType: OscillatorType;
+  leadType: OscillatorType;
+  harmonyType: OscillatorType;
+  baseBpm: number;
+  maxBpm: number;
+  swing: number;
+  hatPattern: number[];
+  kickPattern: number[];
+  snarePattern: number[];
+  bassLevel?: number;
+  leadLevel?: number;
+  harmonyLevel?: number;
+  hatLevel?: number;
+  hatTone?: number;
+}
 
 let musicNodes: {
-  oscillators: OscillatorNode[];
-  gains: GainNode[];
   timeoutId: number | null;
 } | null = null;
 
+let currentMode: MusicMode = "neon-arcade";
 let currentBpm = 120;
-let currentIntensity = 0; // 0..1
+let currentIntensity = 0;
+let stepIndex = 0;
 
-// Notes for a simple bass pattern (minor key, ominous)
-const BASS_NOTES = [65.41, 73.42, 82.41, 77.78]; // C2, D2, E2, Eb2
-const LEAD_NOTES = [261.63, 293.66, 329.63, 311.13, 261.63, 349.23, 329.63, 293.66];
+const MODE_CONFIG: Record<Exclude<MusicMode, "off">, MusicModeConfig> = {
+  "neon-arcade": {
+    bassPattern: [65.41, 65.41, 73.42, 82.41, 77.78, 73.42, 82.41, 98.0],
+    leadPhraseA: [
+      { note: 523.25, length: 1, accent: 0.8 },
+      { note: 659.25, length: 1, accent: 0.45 },
+      { note: 783.99, length: 1, accent: 0.55 },
+      { note: 659.25, length: 1, accent: 0.3 },
+      { note: 698.46, length: 1, accent: 0.65 },
+      { note: 659.25, length: 1, accent: 0.35 },
+      { note: 587.33, length: 1, accent: 0.25 },
+      { note: null, length: 1 },
+    ],
+    leadPhraseB: [
+      { note: 523.25, length: 1, accent: 0.7 },
+      { note: 659.25, length: 1, accent: 0.4 },
+      { note: 880.0, length: 1, accent: 0.8 },
+      { note: 783.99, length: 1, accent: 0.55 },
+      { note: 698.46, length: 1, accent: 0.5 },
+      { note: 659.25, length: 1, accent: 0.35 },
+      { note: 587.33, length: 2, accent: 0.35, glide: 523.25 },
+    ],
+    harmonyPattern: [
+      { notes: [392.0, 523.25], length: 2, accent: 0.35 },
+      null,
+      { notes: [440.0, 587.33], length: 2, accent: 0.25 },
+      null,
+      { notes: [466.16, 622.25], length: 2, accent: 0.3 },
+      null,
+      { notes: [392.0, 523.25], length: 2, accent: 0.25 },
+      null,
+    ],
+    bassType: "triangle",
+    leadType: "square",
+    harmonyType: "triangle",
+    baseBpm: 122,
+    maxBpm: 196,
+    swing: 0.07,
+    hatPattern: [1, 0, 1, 1, 1, 0, 1, 1],
+    kickPattern: [1, 0, 0, 0, 1, 0, 1, 0],
+    snarePattern: [0, 0, 1, 0, 0, 0, 1, 0],
+  },
+  "space-inspired": {
+    bassPattern: [55.0, 55.0, 65.41, 58.27, 73.42, 65.41, 58.27, 49.0],
+    leadPhraseA: [
+      { note: 329.63, length: 2, accent: 0.45 },
+      { note: 392.0, length: 1, accent: 0.3 },
+      { note: 440.0, length: 1, accent: 0.3 },
+      { note: 493.88, length: 2, accent: 0.55, glide: 523.25 },
+      { note: 440.0, length: 1, accent: 0.25 },
+      { note: 392.0, length: 1, accent: 0.2 },
+    ],
+    leadPhraseB: [
+      { note: 329.63, length: 2, accent: 0.4 },
+      { note: 392.0, length: 1, accent: 0.25 },
+      { note: 523.25, length: 1, accent: 0.5 },
+      { note: 587.33, length: 2, accent: 0.6, glide: 659.25 },
+      { note: 523.25, length: 1, accent: 0.35 },
+      { note: 440.0, length: 1, accent: 0.2 },
+    ],
+    harmonyPattern: [
+      { notes: [220.0, 261.63], length: 3, accent: 0.2 },
+      null,
+      { notes: [246.94, 293.66], length: 3, accent: 0.18 },
+      null,
+      { notes: [261.63, 329.63], length: 3, accent: 0.2 },
+      null,
+      { notes: [220.0, 293.66], length: 2, accent: 0.16 },
+      null,
+    ],
+    bassType: "sine",
+    leadType: "triangle",
+    harmonyType: "sine",
+    baseBpm: 102,
+    maxBpm: 168,
+    swing: 0.03,
+    hatPattern: [1, 0, 0, 1, 1, 0, 0, 1],
+    kickPattern: [1, 0, 0, 0, 1, 0, 0, 0],
+    snarePattern: [0, 0, 1, 0, 0, 0, 1, 0],
+  },
+  "8-bit": {
+    bassPattern: [65.41, 82.41, 98.0, 123.47, 98.0, 82.41, 73.42, 65.41],
+    leadPhraseA: [
+      { note: 659.25, length: 1, accent: 0.65 },
+      { note: 783.99, length: 1, accent: 0.45 },
+      { note: 880.0, length: 1, accent: 0.55 },
+      { note: 1046.5, length: 1, accent: 0.7 },
+      { note: 880.0, length: 1, accent: 0.45 },
+      { note: 783.99, length: 1, accent: 0.35 },
+      { note: 698.46, length: 1, accent: 0.3 },
+      { note: 783.99, length: 1, accent: 0.4 },
+    ],
+    leadPhraseB: [
+      { note: 659.25, length: 1, accent: 0.65 },
+      { note: 783.99, length: 1, accent: 0.45 },
+      { note: 932.33, length: 1, accent: 0.55 },
+      { note: 1174.66, length: 1, accent: 0.8 },
+      { note: 1046.5, length: 1, accent: 0.55 },
+      { note: 932.33, length: 1, accent: 0.35 },
+      { note: 783.99, length: 1, accent: 0.25 },
+      { note: 698.46, length: 1, accent: 0.25 },
+    ],
+    harmonyPattern: [
+      { notes: [523.25, 659.25], length: 2, accent: 0.28 },
+      null,
+      { notes: [587.33, 698.46], length: 2, accent: 0.24 },
+      null,
+      { notes: [659.25, 783.99], length: 2, accent: 0.26 },
+      null,
+      { notes: [523.25, 659.25], length: 2, accent: 0.22 },
+      null,
+    ],
+    bassType: "square",
+    leadType: "square",
+    harmonyType: "square",
+    baseBpm: 136,
+    maxBpm: 208,
+    swing: 0,
+    hatPattern: [1, 1, 1, 1, 1, 1, 1, 1],
+    kickPattern: [1, 0, 0, 0, 1, 0, 0, 1],
+    snarePattern: [0, 0, 1, 0, 0, 0, 1, 0],
+  },
+  "techno-trance": {
+    bassPattern: [61.74, 61.74, 73.42, 82.41, 73.42, 61.74, 55.0, 61.74],
+    leadPhraseA: [
+      { note: 369.99, length: 1, accent: 0.35 },
+      { note: null, length: 1 },
+      { note: 415.3, length: 1, accent: 0.35 },
+      { note: 493.88, length: 1, accent: 0.55 },
+      { note: null, length: 1 },
+      { note: 554.37, length: 1, accent: 0.65 },
+      { note: 493.88, length: 1, accent: 0.45 },
+      { note: 415.3, length: 1, accent: 0.3 },
+    ],
+    leadPhraseB: [
+      { note: 369.99, length: 1, accent: 0.35 },
+      { note: 415.3, length: 1, accent: 0.28 },
+      { note: 493.88, length: 1, accent: 0.45 },
+      { note: 554.37, length: 1, accent: 0.55 },
+      { note: 622.25, length: 1, accent: 0.65 },
+      { note: 554.37, length: 1, accent: 0.45 },
+      { note: 493.88, length: 1, accent: 0.35 },
+      { note: 415.3, length: 1, accent: 0.25 },
+    ],
+    harmonyPattern: [
+      { notes: [246.94, 369.99], length: 2, accent: 0.24 },
+      null,
+      { notes: [293.66, 415.3], length: 2, accent: 0.22 },
+      null,
+      { notes: [329.63, 493.88], length: 2, accent: 0.26 },
+      null,
+      { notes: [293.66, 415.3], length: 2, accent: 0.2 },
+      null,
+    ],
+    bassType: "triangle",
+    leadType: "triangle",
+    harmonyType: "triangle",
+    baseBpm: 128,
+    maxBpm: 204,
+    swing: 0.04,
+    hatPattern: [1, 0, 1, 0, 1, 1, 1, 0],
+    kickPattern: [1, 0, 1, 0, 1, 0, 1, 0],
+    snarePattern: [0, 0, 1, 0, 0, 0, 1, 0],
+    bassLevel: 0.9,
+    leadLevel: 0.72,
+    harmonyLevel: 0.85,
+    hatLevel: 0.68,
+    hatTone: 5200,
+  },
+};
 
-/**
- * Maps a game tick rate to BPM and intensity.
- * baseTick=8 -> BPM 120, intensity 0
- * maxTick=12 -> BPM 200, intensity 1
- */
-export function tickRateToMusicParams(tickRate: number, baseTick: number, maxTick: number): { bpm: number; intensity: number } {
-  const t = Math.max(0, Math.min(1, (tickRate - baseTick) / (maxTick - baseTick)));
+export function tickRateToMusicParams(
+  tickRate: number,
+  baseTick: number,
+  maxTick: number,
+  mode: MusicMode = currentMode,
+): { bpm: number; intensity: number } {
+  const clampedMode = mode === "off" ? "neon-arcade" : mode;
+  const config = MODE_CONFIG[clampedMode];
+  const denominator = Math.max(1, maxTick - baseTick);
+  const t = Math.max(0, Math.min(1, (tickRate - baseTick) / denominator));
+
   return {
-    bpm: 120 + t * 80,
+    bpm: config.baseBpm + t * (config.maxBpm - config.baseBpm),
     intensity: t,
   };
 }
 
-export function startMusic(): void {
-  if (musicNodes) return;
+export function startMusic(mode: MusicMode): void {
+  currentMode = mode;
+  stopMusic();
+
+  if (mode === "off") {
+    return;
+  }
+
   const ctx = getAudioContext();
-  const master = getMasterGain();
-  if (!ctx || !master) return;
+  const gainNode = getMusicGain();
+  if (!ctx || !gainNode) return;
 
   try {
-    musicNodes = { oscillators: [], gains: [], timeoutId: null };
-    currentBpm = 120;
+    musicNodes = { timeoutId: null };
+    stepIndex = 0;
     currentIntensity = 0;
-    scheduleBeat(ctx, master);
+    currentBpm = MODE_CONFIG[mode].baseBpm;
+    scheduleBeat();
   } catch {
     // Silent fallback
   }
 }
 
-export function updateMusicTempo(tickRate: number, baseTick: number, maxTick: number): void {
-  const params = tickRateToMusicParams(tickRate, baseTick, maxTick);
+export function updateMusicTempo(
+  tickRate: number,
+  baseTick: number,
+  maxTick: number,
+  mode: MusicMode = currentMode,
+): void {
+  if (mode === "off") return;
+
+  const params = tickRateToMusicParams(tickRate, baseTick, maxTick, mode);
+  currentMode = mode;
   currentBpm = params.bpm;
   currentIntensity = params.intensity;
 }
@@ -53,93 +274,238 @@ export function stopMusic(): void {
   if (musicNodes.timeoutId !== null) {
     clearTimeout(musicNodes.timeoutId);
   }
-  for (const osc of musicNodes.oscillators) {
-    try { osc.stop(); } catch { /* already stopped */ }
-  }
-  beatIndex = 0;
+  stepIndex = 0;
   musicNodes = null;
 }
 
-let beatIndex = 0;
+function scheduleBeat(): void {
+  if (!musicNodes || currentMode === "off") return;
 
-function scheduleBeat(ctx: AudioContext, master: GainNode): void {
-  if (!musicNodes) return;
+  const playStep = () => {
+    if (!musicNodes || currentMode === "off") return;
 
-  const scheduleOneBeat = () => {
-    if (!musicNodes) return;
-    const ctx2 = getAudioContext();
-    const master2 = getMasterGain();
-    if (!ctx2 || !master2) return;
+    const ctx = getAudioContext();
+    const gainNode = getMusicGain();
+    if (!ctx || !gainNode) return;
+
+    const config = MODE_CONFIG[currentMode];
+    const phrase =
+      Math.floor(stepIndex / 8) % 2 === 0
+        ? config.leadPhraseA
+        : config.leadPhraseB;
+    const localStep = stepIndex % 8;
+    const leadStep = phrase[localStep];
+    const harmonyStep = config.harmonyPattern[localStep];
 
     try {
-      // Bass drum-like hit
-      const bassOsc = ctx2.createOscillator();
-      const bassGain = ctx2.createGain();
-      bassOsc.type = 'triangle';
-      const bassNote = BASS_NOTES[beatIndex % BASS_NOTES.length];
-      bassOsc.frequency.setValueAtTime(bassNote, ctx2.currentTime);
-      bassOsc.frequency.exponentialRampToValueAtTime(bassNote * 0.5, ctx2.currentTime + 0.1);
-      const bassVol = 0.25 + currentIntensity * 0.15;
-      bassGain.gain.setValueAtTime(bassVol, ctx2.currentTime);
-      bassGain.gain.exponentialRampToValueAtTime(0.001, ctx2.currentTime + 0.15);
-      bassOsc.connect(bassGain);
-      bassGain.connect(master2);
-      bassOsc.start(ctx2.currentTime);
-      bassOsc.stop(ctx2.currentTime + 0.15);
-
-      // Hi-hat on every other beat (more frequent at higher intensity)
-      const hatFrequency = currentIntensity > 0.3 ? 1 : 2;
-      if (beatIndex % hatFrequency === 0) {
-        const bufferSize = Math.floor(ctx2.sampleRate * 0.03);
-        const buffer = ctx2.createBuffer(1, bufferSize, ctx2.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
-        }
-        const hatSource = ctx2.createBufferSource();
-        hatSource.buffer = buffer;
-        const hatGain = ctx2.createGain();
-        const hatVol = 0.08 + currentIntensity * 0.12;
-        hatGain.gain.setValueAtTime(hatVol, ctx2.currentTime);
-        hatGain.gain.exponentialRampToValueAtTime(0.001, ctx2.currentTime + 0.03);
-        hatSource.connect(hatGain);
-        hatGain.connect(master2);
-        hatSource.start(ctx2.currentTime);
-      }
-
-      // Lead synth layer (only at higher intensity)
-      if (currentIntensity > 0.2) {
-        const leadOsc = ctx2.createOscillator();
-        const leadGain = ctx2.createGain();
-        leadOsc.type = 'square';
-        const leadNote = LEAD_NOTES[beatIndex % LEAD_NOTES.length];
-        leadOsc.frequency.setValueAtTime(leadNote, ctx2.currentTime);
-        const leadVol = 0.06 + (currentIntensity - 0.2) * 0.15;
-        leadGain.gain.setValueAtTime(leadVol, ctx2.currentTime);
-        leadGain.gain.exponentialRampToValueAtTime(0.001, ctx2.currentTime + 0.08);
-        leadOsc.connect(leadGain);
-        leadGain.connect(master2);
-        leadOsc.start(ctx2.currentTime);
-        leadOsc.stop(ctx2.currentTime + 0.08);
-      }
-
-      beatIndex++;
+      playKick(ctx, gainNode, config, localStep);
+      playSnare(ctx, gainNode, config, localStep);
+      playHat(ctx, gainNode, config, localStep);
+      playBass(ctx, gainNode, config, stepIndex);
+      playLead(ctx, gainNode, config, leadStep);
+      playHarmony(ctx, gainNode, config, harmonyStep);
+      stepIndex++;
     } catch {
       // Silent fallback
     }
   };
 
   const scheduleNext = () => {
-    if (!musicNodes) return;
-    const beatInterval = 60000 / currentBpm / 2; // 8th notes
+    if (!musicNodes || currentMode === "off") return;
+
+    const config = MODE_CONFIG[currentMode];
+    const baseInterval = 60000 / currentBpm / 2;
+    const isOffBeat = stepIndex % 2 === 1;
+    const interval = isOffBeat
+      ? baseInterval * (1 + config.swing)
+      : baseInterval * (1 - config.swing);
+
     musicNodes.timeoutId = window.setTimeout(() => {
-      scheduleOneBeat();
+      playStep();
       scheduleNext();
-    }, beatInterval);
+    }, interval);
   };
 
-  scheduleOneBeat();
+  playStep();
   scheduleNext();
+}
+
+function playBass(
+  ctx: AudioContext,
+  gainNode: GainNode,
+  config: MusicModeConfig,
+  index: number,
+): void {
+  const bassNote = config.bassPattern[index % config.bassPattern.length];
+  const bassOsc = ctx.createOscillator();
+  const bassGain = ctx.createGain();
+  const accent = index % 4 === 0 ? 0.05 : 0;
+  const duration = 0.24;
+  const volume =
+    (0.14 + currentIntensity * 0.16 + accent) * (config.bassLevel ?? 1);
+
+  bassOsc.type = config.bassType;
+  bassOsc.frequency.setValueAtTime(bassNote, ctx.currentTime);
+  bassOsc.frequency.exponentialRampToValueAtTime(
+    Math.max(30, bassNote * 0.58),
+    ctx.currentTime + duration,
+  );
+  bassGain.gain.setValueAtTime(volume, ctx.currentTime);
+  bassGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+
+  bassOsc.connect(bassGain);
+  bassGain.connect(gainNode);
+  bassOsc.start(ctx.currentTime);
+  bassOsc.stop(ctx.currentTime + duration + 0.01);
+}
+
+function playKick(
+  ctx: AudioContext,
+  gainNode: GainNode,
+  config: MusicModeConfig,
+  step: number,
+): void {
+  if (!config.kickPattern[step % config.kickPattern.length]) return;
+
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const volume = 0.12 + currentIntensity * 0.08;
+
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(150, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(42, ctx.currentTime + 0.12);
+  gain.gain.setValueAtTime(volume, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.14);
+
+  osc.connect(gain);
+  gain.connect(gainNode);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.15);
+}
+
+function playSnare(
+  ctx: AudioContext,
+  gainNode: GainNode,
+  config: MusicModeConfig,
+  step: number,
+): void {
+  if (!config.snarePattern[step % config.snarePattern.length]) return;
+
+  const bufferSize = Math.floor(ctx.sampleRate * 0.09);
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+  }
+
+  const source = ctx.createBufferSource();
+  const filter = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+  source.buffer = buffer;
+  filter.type = "highpass";
+  filter.frequency.setValueAtTime(1200, ctx.currentTime);
+  gain.gain.setValueAtTime(0.04 + currentIntensity * 0.06, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+
+  source.connect(filter);
+  filter.connect(gain);
+  gain.connect(gainNode);
+  source.start(ctx.currentTime);
+}
+
+function playHat(
+  ctx: AudioContext,
+  gainNode: GainNode,
+  config: MusicModeConfig,
+  step: number,
+): void {
+  if (!config.hatPattern[step % config.hatPattern.length]) return;
+
+  const bufferSize = Math.floor(ctx.sampleRate * 0.02);
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+  }
+
+  const source = ctx.createBufferSource();
+  const filter = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+  source.buffer = buffer;
+  filter.type = "bandpass";
+  filter.frequency.setValueAtTime(7000, ctx.currentTime);
+  gain.gain.setValueAtTime(
+    (0.03 + currentIntensity * 0.07) * (config.hatLevel ?? 1),
+    ctx.currentTime,
+  );
+  filter.frequency.setValueAtTime(config.hatTone ?? 7000, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.035);
+
+  source.connect(filter);
+  filter.connect(gain);
+  gain.connect(gainNode);
+  source.start(ctx.currentTime);
+}
+
+function playLead(
+  ctx: AudioContext,
+  gainNode: GainNode,
+  config: MusicModeConfig,
+  step: PhraseStep,
+): void {
+  if (step.note === null) return;
+
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const accent = step.accent ?? 0;
+  const duration = 0.11 * step.length + accent * 0.05;
+  const volume =
+    (0.04 + currentIntensity * 0.1 + accent * 0.04) * (config.leadLevel ?? 1);
+
+  osc.type = config.leadType;
+  osc.frequency.setValueAtTime(step.note, ctx.currentTime);
+  if (step.glide) {
+    osc.frequency.linearRampToValueAtTime(
+      step.glide,
+      ctx.currentTime + duration,
+    );
+  }
+  gain.gain.setValueAtTime(volume, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+
+  osc.connect(gain);
+  gain.connect(gainNode);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + duration + 0.01);
+}
+
+function playHarmony(
+  ctx: AudioContext,
+  gainNode: GainNode,
+  config: MusicModeConfig,
+  step: ChordStep | null,
+): void {
+  if (!step || currentIntensity < 0.08) return;
+
+  const duration = 0.12 * step.length + (step.accent ?? 0) * 0.06;
+  const baseVolume =
+    (0.02 + currentIntensity * 0.05 + (step.accent ?? 0) * 0.02) *
+    (config.harmonyLevel ?? 1);
+
+  for (const note of step.notes) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = config.harmonyType;
+    osc.frequency.setValueAtTime(note, ctx.currentTime);
+    gain.gain.setValueAtTime(baseVolume / step.notes.length, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+
+    osc.connect(gain);
+    gain.connect(gainNode);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration + 0.01);
+  }
 }
 
 export function isMusicPlaying(): boolean {

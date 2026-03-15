@@ -1,6 +1,10 @@
-import { useEffect, useRef } from 'react';
-import { Direction, Position } from '../engine/types';
-import { mapKeyToDirection, resolveDirection, isGameKey } from '../engine/input';
+import { useEffect, useRef } from "react";
+import { Direction, Position } from "../engine/types";
+import {
+  mapKeyToDirection,
+  resolveDirection,
+  isGameKey,
+} from "../engine/input";
 
 export interface InputState {
   player1Dir: Direction | null;
@@ -19,18 +23,19 @@ function directionFromTouchRelativeToHead(
   touchCanvasY: number,
   headCanvasX: number,
   headCanvasY: number,
-  cellSize: number
+  cellSize: number,
 ): Direction | null {
   const dx = touchCanvasX - headCanvasX;
   const dy = touchCanvasY - headCanvasY;
 
   // Ignore taps too close to the head (within half a cell)
-  if (Math.abs(dx) < cellSize * 0.5 && Math.abs(dy) < cellSize * 0.5) return null;
+  if (Math.abs(dx) < cellSize * 0.5 && Math.abs(dy) < cellSize * 0.5)
+    return null;
 
   if (Math.abs(dx) > Math.abs(dy)) {
-    return dx > 0 ? 'right' : 'left';
+    return dx > 0 ? "right" : "left";
   } else {
-    return dy > 0 ? 'down' : 'up';
+    return dy > 0 ? "down" : "up";
   }
 }
 
@@ -38,10 +43,13 @@ export function useInput(
   player1CurrentDir: Direction,
   player2CurrentDir: Direction,
   enabled: boolean,
-  touchContext?: TouchContext
+  touchContext?: TouchContext,
 ): React.MutableRefObject<InputState> {
   const inputRef = useRef<InputState>({ player1Dir: null, player2Dir: null });
-  const currentDirsRef = useRef({ p1: player1CurrentDir, p2: player2CurrentDir });
+  const currentDirsRef = useRef({
+    p1: player1CurrentDir,
+    p2: player2CurrentDir,
+  });
   const touchContextRef = useRef(touchContext);
 
   // Keep current directions and touch context up to date
@@ -85,9 +93,12 @@ export function useInput(
 
       // Ignore touches outside the canvas
       if (
-        touch.clientX < rect.left || touch.clientX > rect.right ||
-        touch.clientY < rect.top || touch.clientY > rect.bottom
-      ) return;
+        touch.clientX < rect.left ||
+        touch.clientX > rect.right ||
+        touch.clientY < rect.top ||
+        touch.clientY > rect.bottom
+      )
+        return;
 
       e.preventDefault();
 
@@ -104,9 +115,11 @@ export function useInput(
       const headPixelY = (ctx.player1Head.y + 0.5) * cellH;
 
       const dir = directionFromTouchRelativeToHead(
-        touchCanvasX, touchCanvasY,
-        headPixelX, headPixelY,
-        Math.min(cellW, cellH)
+        touchCanvasX,
+        touchCanvasY,
+        headPixelX,
+        headPixelY,
+        Math.min(cellW, cellH),
       );
 
       if (dir !== null) {
@@ -117,12 +130,14 @@ export function useInput(
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("touchstart", handleTouchStart, {
+      passive: false,
+    });
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("touchstart", handleTouchStart);
     };
   }, [enabled]);
 

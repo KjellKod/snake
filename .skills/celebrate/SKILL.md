@@ -51,7 +51,7 @@ If no argument is provided:
 
 ### Step 3: Generate the Celebration as Rich Markdown
 
-**IMPORTANT: Write the celebration directly as your response text. Do NOT run a script. Do NOT wrap in code blocks. The UI renders agent markdown beautifully — big headers, colorful emojis, proper spacing. Use that.**
+**IMPORTANT: Write the celebration directly as your response text. Do NOT run a script. Do NOT wrap the entire celebration in a code block. The UI renders agent markdown beautifully, but ASCII/block-letter title art must be emitted as plain text lines rather than markdown headers or list items.**
 
 You have all the data from the artifacts. Now **create your own celebration**. Be creative. Make it feel like an achievement, not a status report.
 
@@ -79,9 +79,16 @@ You have all the data from the artifacts. Now **create your own celebration**. B
 - `---` horizontal rules for visual separation
 - Tables if they help present the data
 
+**ASCII/block-letter title rules:**
+- Emit block-letter rows as plain text lines only.
+- Do **not** prefix block-letter rows with `#`, `-`, `>`, or any other markdown marker.
+- Keep the title art contiguous with no blank separator inserted inside the rows.
+- After the title art, leave one normal blank line before the rest of the celebration.
+
 **Do NOT:**
 - Put too many characters on one line of block letters — max ~5 letters per line, break long names across multiple lines (one word per block, like the HELLO/WORLD example)
 - Wrap the entire celebration in a code block (kills the rich rendering)
+- Prefix ASCII title art with markdown header markers such as `#`
 - Use generic achievements like "Quest Complete" or "Battle Tested"
 - Use generic metrics like "Files Changed: 22" or "Agents Involved: 0"
 - Use fallback quotes like "Shipping should feel like a celebration"
