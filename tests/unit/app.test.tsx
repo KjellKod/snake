@@ -7,6 +7,7 @@ const customSettings: GameSettings = {
   wallsLethal: false,
   otherSnakeLethal: false,
   powerUpsEnabled: true,
+  monoSpeed: true,
 };
 
 const gameState: GameState = {

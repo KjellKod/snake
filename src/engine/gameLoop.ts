@@ -173,7 +173,9 @@ export function tick(
   const totalLength =
     newPlayers[0].snake.segments.length + newPlayers[1].snake.segments.length;
   const speedBoost = Math.floor(totalLength / 5) * 0.5;
-  const tickRate = Math.min(BASE_TICK_RATE + speedBoost, MAX_TICK_RATE);
+  const tickRate = state.settings.monoSpeed
+    ? BASE_TICK_RATE
+    : Math.min(BASE_TICK_RATE + speedBoost, MAX_TICK_RATE);
 
   const nextState: GameState = {
     ...state,

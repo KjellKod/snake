@@ -66,6 +66,29 @@ describe("tick with settings and power-ups", () => {
     expect(result.state.food.kind).toBe("normal");
     expect(result.state.settings.wallsLethal).toBe(true);
     expect(result.state.settings.otherSnakeLethal).toBe(true);
+    expect(result.state.settings.monoSpeed).toBe(false);
+  });
+
+  it("keeps the base tick rate when mono speed is enabled", () => {
+    const state = makeState(undefined, { monoSpeed: true });
+    state.players[0].snake.segments = Array.from(
+      { length: 12 },
+      (_, index) => ({
+        x: 3 + index,
+        y: 10,
+      }),
+    );
+    state.players[1].snake.segments = Array.from(
+      { length: 10 },
+      (_, index) => ({
+        x: 16 - index,
+        y: 12,
+      }),
+    );
+
+    const result = move(state);
+
+    expect(result.state.tickRate).toBe(8);
   });
 
   it("wraps a snake at the board edge when walls are non-lethal", () => {

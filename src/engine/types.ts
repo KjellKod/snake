@@ -45,6 +45,7 @@ export interface GameSettings {
   wallsLethal: boolean;
   otherSnakeLethal: boolean;
   powerUpsEnabled: boolean;
+  monoSpeed: boolean;
 }
 
 export interface FoodState {
@@ -89,6 +90,7 @@ export function createDefaultSettings(): GameSettings {
     wallsLethal: true,
     otherSnakeLethal: true,
     powerUpsEnabled: false,
+    monoSpeed: false,
   };
 }
 

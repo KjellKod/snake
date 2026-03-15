@@ -41,7 +41,7 @@ export function SettingsScreen({
     <
       K extends keyof Pick<
         GameSettings,
-        "wallsLethal" | "otherSnakeLethal" | "powerUpsEnabled"
+        "wallsLethal" | "otherSnakeLethal" | "powerUpsEnabled" | "monoSpeed"
       >,
     >(
       key: K,
@@ -120,6 +120,20 @@ export function SettingsScreen({
             type="checkbox"
             checked={settings.powerUpsEnabled}
             onChange={handleToggle("powerUpsEnabled")}
+          />
+        </label>
+
+        <label className="settings-toggle">
+          <div>
+            <span>Mono Speed</span>
+            <small>
+              Keep the match at one steady speed instead of speeding up.
+            </small>
+          </div>
+          <input
+            type="checkbox"
+            checked={settings.monoSpeed}
+            onChange={handleToggle("monoSpeed")}
           />
         </label>
       </div>

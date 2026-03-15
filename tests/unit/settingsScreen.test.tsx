@@ -80,6 +80,7 @@ describe("SettingsScreen", () => {
     const wallsToggle = findElementByType(tree, "input", 0);
     const otherSnakeToggle = findElementByType(tree, "input", 1);
     const powerUpsToggle = findElementByType(tree, "input", 2);
+    const monoSpeedToggle = findElementByType(tree, "input", 3);
     const backButton = findElementByType(tree, "button", 0);
     const startButton = findElementByType(tree, "button", 1);
 
@@ -95,12 +96,16 @@ describe("SettingsScreen", () => {
     expect(markup).toContain(
       "Every 10th snack grants a 15-second invincibility refresh.",
     );
+    expect(markup).toContain(
+      "Keep the match at one steady speed instead of speeding up.",
+    );
 
     musicSelect.props.onChange({ target: { value: "off" } });
     sfxSelect.props.onChange({ target: { value: "high" } });
     wallsToggle.props.onChange({ target: { checked: false } });
     otherSnakeToggle.props.onChange({ target: { checked: false } });
     powerUpsToggle.props.onChange({ target: { checked: true } });
+    monoSpeedToggle.props.onChange({ target: { checked: true } });
     backButton.props.onClick();
     startButton.props.onClick();
 
@@ -123,6 +128,10 @@ describe("SettingsScreen", () => {
     expect(onChange).toHaveBeenNthCalledWith(5, {
       ...initialSettings,
       powerUpsEnabled: true,
+    } satisfies GameSettings);
+    expect(onChange).toHaveBeenNthCalledWith(6, {
+      ...initialSettings,
+      monoSpeed: true,
     } satisfies GameSettings);
     expect(onBack).toHaveBeenCalledTimes(1);
     expect(onStart).toHaveBeenCalledTimes(1);

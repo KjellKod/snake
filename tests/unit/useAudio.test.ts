@@ -58,6 +58,7 @@ describe("useAudio", () => {
       wallsLethal: false,
       otherSnakeLethal: false,
       powerUpsEnabled: true,
+      monoSpeed: true,
     });
 
     expect(setSfxGainLevel).toHaveBeenCalledWith(0.55);
