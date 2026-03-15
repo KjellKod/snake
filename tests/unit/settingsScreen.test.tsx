@@ -93,7 +93,7 @@ describe("SettingsScreen", () => {
       "Turn this off to use the slowdown penalty instead of instant death.",
     );
     expect(markup).toContain(
-      "Every 10th snack grants a 30-second invincibility refresh.",
+      "Every 10th snack grants a 15-second invincibility refresh.",
     );
 
     musicSelect.props.onChange({ target: { value: "off" } });

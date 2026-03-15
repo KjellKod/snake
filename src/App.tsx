@@ -84,23 +84,11 @@ export function App() {
   }, [applySettings, ensureAudio, settings, start, startGameAudio]);
 
   const handleRestart = useCallback(() => {
-    ensureAudio();
-    applySettings(settings);
     stop();
     stopGameAudio();
-    setPhase("playing");
     pendingEventsRef.current = [];
-    start(settings);
-    startGameAudio(settings);
-  }, [
-    applySettings,
-    ensureAudio,
-    settings,
-    stop,
-    stopGameAudio,
-    start,
-    startGameAudio,
-  ]);
+    setPhase("settings");
+  }, [stop, stopGameAudio]);
 
   if (phase === "start") {
     return (

@@ -113,7 +113,7 @@ export function SettingsScreen({
           <div>
             <span>Enable Power-Ups</span>
             <small>
-              Every 10th snack grants a 30-second invincibility refresh.
+              Every 10th snack grants a 15-second invincibility refresh.
             </small>
           </div>
           <input

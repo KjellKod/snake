@@ -209,4 +209,76 @@ describe("App", () => {
       false,
     );
   });
+
+  it("returns to settings from game over before starting another round", async () => {
+    const setPhase = vi.fn();
+    const setSettings = vi.fn();
+    const setCurrentEvents = vi.fn();
+    const start = vi.fn();
+    const stop = vi.fn();
+    const togglePause = vi.fn();
+    const ensureAudio = vi.fn();
+    const applySettings = vi.fn();
+    const handleGameEvent = vi.fn();
+    const startGameAudio = vi.fn();
+    const stopGameAudio = vi.fn();
+    const useState = vi
+      .fn()
+      .mockImplementationOnce(() => ["game-over", setPhase])
+      .mockImplementationOnce(() => [customSettings, setSettings])
+      .mockImplementationOnce(() => [[], setCurrentEvents]);
+    const useRef = vi
+      .fn()
+      .mockImplementationOnce(() => ({ current: null }))
+      .mockImplementationOnce(() => ({ current: [] }));
+
+    vi.doMock("react", async () => {
+      const actual = await vi.importActual<typeof import("react")>("react");
+      return {
+        ...actual,
+        useState,
+        useRef,
+        useCallback: <T,>(fn: T) => fn,
+        useLayoutEffect: () => undefined,
+        useEffect: () => undefined,
+      };
+    });
+
+    vi.doMock("../../src/hooks/useGameLoop", () => ({
+      useGameLoop: () => ({
+        gameState,
+        start,
+        stop,
+        paused: false,
+        togglePause,
+      }),
+    }));
+
+    vi.doMock("../../src/hooks/useAudio", () => ({
+      useAudio: () => ({
+        ensureAudio,
+        applySettings,
+        handleGameEvent,
+        startGameAudio,
+        stopGameAudio,
+      }),
+    }));
+
+    vi.doMock("../../src/components/GameOverScreen", () => ({
+      GameOverScreen: (props: unknown) => ({ type: "game-over-screen", props }),
+    }));
+
+    const { App } = await import("../../src/App");
+    const tree = App() as { props: { onRestart: () => void } };
+
+    tree.props.onRestart();
+
+    expect(stop).toHaveBeenCalledTimes(1);
+    expect(stopGameAudio).toHaveBeenCalledTimes(1);
+    expect(setPhase).toHaveBeenCalledWith("settings");
+    expect(start).not.toHaveBeenCalled();
+    expect(startGameAudio).not.toHaveBeenCalled();
+    expect(ensureAudio).not.toHaveBeenCalled();
+    expect(applySettings).not.toHaveBeenCalled();
+  });
 });

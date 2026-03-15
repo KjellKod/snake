@@ -15,6 +15,27 @@ npm run dev
 
 Open http://localhost:5173 in your browser.
 
+## What Each Command Does
+
+- `npm install` installs the project dependencies from `package.json`.
+- `npm run dev` starts the Vite development server for local development.
+- `npm run build` creates the production build in `dist/` and runs TypeScript checks.
+- `npm run preview` serves the built `dist/` output locally so you can test the production build.
+
+Typical local development flow:
+
+```bash
+npm install
+npm run dev
+```
+
+To verify the production build locally:
+
+```bash
+npm run build
+npm run preview
+```
+
 ## Controls
 
 | Player | Up | Down | Left | Right |
