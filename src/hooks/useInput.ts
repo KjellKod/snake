@@ -28,8 +28,8 @@ function directionFromTouchRelativeToHead(
   const dx = touchCanvasX - headCanvasX;
   const dy = touchCanvasY - headCanvasY;
 
-  // Ignore taps too close to the head (within half a cell)
-  if (Math.abs(dx) < cellSize * 0.5 && Math.abs(dy) < cellSize * 0.5)
+  // Ignore taps very close to the head (within a quarter cell)
+  if (Math.abs(dx) < cellSize * 0.25 && Math.abs(dy) < cellSize * 0.25)
     return null;
 
   if (Math.abs(dx) > Math.abs(dy)) {
