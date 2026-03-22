@@ -370,8 +370,13 @@ canvas {
     overflow: auto;
   }
 
+  body:has(.settings-screen) #root {
+    align-items: flex-start;
+  }
+
   .settings-screen {
     padding: 18px;
+    padding-top: 24px;
     padding-bottom: 100px;
     max-height: none;
     overflow: visible;
