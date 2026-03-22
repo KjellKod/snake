@@ -18,13 +18,14 @@ export interface TouchContext {
   boardHeight: number;
 }
 
-function directionFromTouchRelativeToHead(
+/** Return [primary, secondary] directions based on touch relative to head. */
+function directionsFromTouch(
   touchCanvasX: number,
   touchCanvasY: number,
   headCanvasX: number,
   headCanvasY: number,
   cellSize: number,
-): Direction | null {
+): [Direction, Direction] | null {
   const dx = touchCanvasX - headCanvasX;
   const dy = touchCanvasY - headCanvasY;
 
@@ -32,10 +33,13 @@ function directionFromTouchRelativeToHead(
   if (Math.abs(dx) < cellSize * 0.25 && Math.abs(dy) < cellSize * 0.25)
     return null;
 
+  const horizontal: Direction = dx > 0 ? "right" : "left";
+  const vertical: Direction = dy > 0 ? "down" : "up";
+
   if (Math.abs(dx) > Math.abs(dy)) {
-    return dx > 0 ? "right" : "left";
+    return [horizontal, vertical];
   } else {
-    return dy > 0 ? "down" : "up";
+    return [vertical, horizontal];
   }
 }
 
@@ -114,7 +118,7 @@ export function useInput(
       const headPixelX = (ctx.player1Head.x + 0.5) * cellW;
       const headPixelY = (ctx.player1Head.y + 0.5) * cellH;
 
-      const dir = directionFromTouchRelativeToHead(
+      const dirs = directionsFromTouch(
         touchCanvasX,
         touchCanvasY,
         headPixelX,
@@ -122,8 +126,12 @@ export function useInput(
         Math.min(cellW, cellH),
       );
 
-      if (dir !== null) {
-        const resolved = resolveDirection(dir, currentDirsRef.current.p1);
+      if (dirs !== null) {
+        const currentDir = currentDirsRef.current.p1;
+        // Try primary direction; if it's opposite to current, fall back to secondary
+        const resolved =
+          resolveDirection(dirs[0], currentDir) ??
+          resolveDirection(dirs[1], currentDir);
         if (resolved !== null) {
           inputRef.current.player1Dir = resolved;
         }
