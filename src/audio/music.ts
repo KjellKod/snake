@@ -299,7 +299,9 @@ function scheduleBeat(): void {
     if (!ctx || !gainNode) return;
 
     const configKey =
-      currentMode === "drums-only" ? "neon-arcade" : currentMode;
+      currentMode === "drums-only" || currentMode === "sfx-only"
+        ? "neon-arcade"
+        : currentMode;
     const config = MODE_CONFIG[configKey];
     const localStep = stepIndex % 8;
 
@@ -330,7 +332,9 @@ function scheduleBeat(): void {
     if (!musicNodes || currentMode === "off") return;
 
     const configKey =
-      currentMode === "drums-only" ? "neon-arcade" : currentMode;
+      currentMode === "drums-only" || currentMode === "sfx-only"
+        ? "neon-arcade"
+        : currentMode;
     const config = MODE_CONFIG[configKey];
     const baseInterval = 60000 / currentBpm / 2;
     const isOffBeat = stepIndex % 2 === 1;
