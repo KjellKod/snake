@@ -1,6 +1,8 @@
 export type Direction = "up" | "down" | "left" | "right";
 export type MusicMode =
   | "off"
+  | "drums-only"
+  | "sfx-only"
   | "neon-arcade"
   | "space-inspired"
   | "8-bit"

@@ -14,6 +14,8 @@ const MUSIC_OPTIONS: { value: MusicMode; label: string }[] = [
   { value: "space-inspired", label: "Space Inspired" },
   { value: "8-bit", label: "8-Bit" },
   { value: "techno-trance", label: "Techno Trance" },
+  { value: "drums-only", label: "Drums Only" },
+  { value: "sfx-only", label: "SFX Only" },
   { value: "off", label: "Off" },
 ];
 
@@ -60,7 +62,7 @@ export function SettingsScreen({
       <div className="settings-grid">
         <label className="settings-field">
           <span>Music</span>
-          <small>Pick the background track or turn music off.</small>
+          <small>Pick a background track, drums only, or turn sound off.</small>
           <select value={settings.musicMode} onChange={handleMusicChange}>
             {MUSIC_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
