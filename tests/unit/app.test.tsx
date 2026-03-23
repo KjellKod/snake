@@ -77,8 +77,8 @@ describe("App", () => {
       .mockImplementationOnce(() => ({ current: null }))
       .mockImplementationOnce(() => ({ current: [] }));
 
-    vi.doMock("react", async () => {
-      const actual = await vi.importActual<typeof import("react")>("react");
+    vi.doMock("react", async (importOriginal) => {
+      const actual = await importOriginal<typeof import("react")>();
       return {
         ...actual,
         useState,
@@ -172,8 +172,8 @@ describe("App", () => {
       togglePause,
     }));
 
-    vi.doMock("react", async () => {
-      const actual = await vi.importActual<typeof import("react")>("react");
+    vi.doMock("react", async (importOriginal) => {
+      const actual = await importOriginal<typeof import("react")>();
       return {
         ...actual,
         useState,
@@ -200,6 +200,10 @@ describe("App", () => {
 
     vi.doMock("../../src/components/SettingsScreen", () => ({
       SettingsScreen: (props: unknown) => ({ type: "settings-screen", props }),
+    }));
+
+    vi.doMock("../../src/components/GameCanvas", () => ({
+      GameCanvas: (props: unknown) => ({ type: "game-canvas", props }),
     }));
 
     const { App } = await import("../../src/App");
@@ -236,8 +240,8 @@ describe("App", () => {
       .mockImplementationOnce(() => ({ current: null }))
       .mockImplementationOnce(() => ({ current: [] }));
 
-    vi.doMock("react", async () => {
-      const actual = await vi.importActual<typeof import("react")>("react");
+    vi.doMock("react", async (importOriginal) => {
+      const actual = await importOriginal<typeof import("react")>();
       return {
         ...actual,
         useState,
@@ -270,6 +274,10 @@ describe("App", () => {
 
     vi.doMock("../../src/components/GameOverScreen", () => ({
       GameOverScreen: (props: unknown) => ({ type: "game-over-screen", props }),
+    }));
+
+    vi.doMock("../../src/components/GameCanvas", () => ({
+      GameCanvas: (props: unknown) => ({ type: "game-canvas", props }),
     }));
 
     const { App } = await import("../../src/App");
