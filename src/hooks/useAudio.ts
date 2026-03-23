@@ -33,13 +33,18 @@ export function useAudio() {
   }, []);
 
   const applySettings = useCallback((settings: GameSettings) => {
-    setSfxGainLevel(sfxLevelToGain(settings.sfxLevel));
+    if (settings.musicMode === "off") {
+      setSfxGainLevel(0);
+    } else {
+      setSfxGainLevel(sfxLevelToGain(settings.sfxLevel));
+    }
   }, []);
 
   const handleGameEvent = useCallback((event: GameEvent, state: GameState) => {
+    const muted = state.settings.musicMode === "off";
     switch (event.type) {
       case "food-eaten":
-        playEatSound();
+        if (!muted) playEatSound();
         updateMusicTempo(
           state.tickRate,
           BASE_TICK_RATE,
@@ -48,15 +53,15 @@ export function useAudio() {
         );
         break;
       case "player-died":
-        playCrashSound();
+        if (!muted) playCrashSound();
         break;
       case "effect-applied":
-        if (event.effect === "invincibility") {
+        if (!muted && event.effect === "invincibility") {
           playEatSound();
         }
         break;
       case "game-over":
-        playGameOverSound();
+        if (!muted) playGameOverSound();
         stopMusic();
         break;
     }

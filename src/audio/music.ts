@@ -44,7 +44,7 @@ let currentBpm = 120;
 let currentIntensity = 0;
 let stepIndex = 0;
 
-const MODE_CONFIG: Record<Exclude<MusicMode, "off">, MusicModeConfig> = {
+export const MODE_CONFIG: Record<Exclude<MusicMode, "off" | "drums-only" | "sfx-only">, MusicModeConfig> = {
   "neon-arcade": {
     bassPattern: [65.41, 65.41, 73.42, 82.41, 77.78, 73.42, 82.41, 98.0],
     leadPhraseA: [
@@ -65,6 +65,7 @@ const MODE_CONFIG: Record<Exclude<MusicMode, "off">, MusicModeConfig> = {
       { note: 698.46, length: 1, accent: 0.5 },
       { note: 659.25, length: 1, accent: 0.35 },
       { note: 587.33, length: 2, accent: 0.35, glide: 523.25 },
+      { note: null, length: 1 },
     ],
     harmonyPattern: [
       { notes: [392.0, 523.25], length: 2, accent: 0.35 },
@@ -95,6 +96,8 @@ const MODE_CONFIG: Record<Exclude<MusicMode, "off">, MusicModeConfig> = {
       { note: 493.88, length: 2, accent: 0.55, glide: 523.25 },
       { note: 440.0, length: 1, accent: 0.25 },
       { note: 392.0, length: 1, accent: 0.2 },
+      { note: null, length: 1 },
+      { note: null, length: 1 },
     ],
     leadPhraseB: [
       { note: 329.63, length: 2, accent: 0.4 },
@@ -103,6 +106,8 @@ const MODE_CONFIG: Record<Exclude<MusicMode, "off">, MusicModeConfig> = {
       { note: 587.33, length: 2, accent: 0.6, glide: 659.25 },
       { note: 523.25, length: 1, accent: 0.35 },
       { note: 440.0, length: 1, accent: 0.2 },
+      { note: null, length: 1 },
+      { note: null, length: 1 },
     ],
     harmonyPattern: [
       { notes: [220.0, 261.63], length: 3, accent: 0.2 },
@@ -221,7 +226,10 @@ export function tickRateToMusicParams(
   maxTick: number,
   mode: MusicMode = currentMode,
 ): { bpm: number; intensity: number } {
-  const clampedMode = mode === "off" ? "neon-arcade" : mode;
+  const clampedMode =
+    mode === "off" || mode === "drums-only" || mode === "sfx-only"
+      ? "neon-arcade"
+      : mode;
   const config = MODE_CONFIG[clampedMode];
   const denominator = Math.max(1, maxTick - baseTick);
   const t = Math.max(0, Math.min(1, (tickRate - baseTick) / denominator));
@@ -236,7 +244,7 @@ export function startMusic(mode: MusicMode): void {
   currentMode = mode;
   stopMusic();
 
-  if (mode === "off") {
+  if (mode === "off" || mode === "sfx-only") {
     return;
   }
 
@@ -244,11 +252,13 @@ export function startMusic(mode: MusicMode): void {
   const gainNode = getMusicGain();
   if (!ctx || !gainNode) return;
 
+  const configKey = mode === "drums-only" ? "neon-arcade" : mode;
+
   try {
     musicNodes = { timeoutId: null };
     stepIndex = 0;
     currentIntensity = 0;
-    currentBpm = MODE_CONFIG[mode].baseBpm;
+    currentBpm = MODE_CONFIG[configKey].baseBpm;
     scheduleBeat();
   } catch {
     // Silent fallback
@@ -261,7 +271,7 @@ export function updateMusicTempo(
   maxTick: number,
   mode: MusicMode = currentMode,
 ): void {
-  if (mode === "off") return;
+  if (mode === "off" || mode === "sfx-only") return;
 
   const params = tickRateToMusicParams(tickRate, baseTick, maxTick, mode);
   currentMode = mode;
@@ -288,22 +298,30 @@ function scheduleBeat(): void {
     const gainNode = getMusicGain();
     if (!ctx || !gainNode) return;
 
-    const config = MODE_CONFIG[currentMode];
-    const phrase =
-      Math.floor(stepIndex / 8) % 2 === 0
-        ? config.leadPhraseA
-        : config.leadPhraseB;
+    const configKey =
+      currentMode === "drums-only" || currentMode === "sfx-only"
+        ? "neon-arcade"
+        : currentMode;
+    const config = MODE_CONFIG[configKey];
     const localStep = stepIndex % 8;
-    const leadStep = phrase[localStep];
-    const harmonyStep = config.harmonyPattern[localStep];
 
     try {
       playKick(ctx, gainNode, config, localStep);
       playSnare(ctx, gainNode, config, localStep);
       playHat(ctx, gainNode, config, localStep);
-      playBass(ctx, gainNode, config, stepIndex);
-      playLead(ctx, gainNode, config, leadStep);
-      playHarmony(ctx, gainNode, config, harmonyStep);
+
+      if (currentMode !== "drums-only") {
+        const phrase =
+          Math.floor(stepIndex / 8) % 2 === 0
+            ? config.leadPhraseA
+            : config.leadPhraseB;
+        const leadStep = phrase[localStep];
+        const harmonyStep = config.harmonyPattern[localStep];
+        playBass(ctx, gainNode, config, stepIndex);
+        playLead(ctx, gainNode, config, leadStep);
+        playHarmony(ctx, gainNode, config, harmonyStep);
+      }
+
       stepIndex++;
     } catch {
       // Silent fallback
@@ -313,7 +331,11 @@ function scheduleBeat(): void {
   const scheduleNext = () => {
     if (!musicNodes || currentMode === "off") return;
 
-    const config = MODE_CONFIG[currentMode];
+    const configKey =
+      currentMode === "drums-only" || currentMode === "sfx-only"
+        ? "neon-arcade"
+        : currentMode;
+    const config = MODE_CONFIG[configKey];
     const baseInterval = 60000 / currentBpm / 2;
     const isOffBeat = stepIndex % 2 === 1;
     const interval = isOffBeat
