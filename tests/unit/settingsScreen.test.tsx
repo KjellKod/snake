@@ -87,7 +87,7 @@ describe("SettingsScreen", () => {
     expect(markup).toContain(
       "Tune the match before you start. Defaults preserve the current game.",
     );
-    expect(markup).toContain("Pick the background track or turn music off.");
+    expect(markup).toContain("Pick a background track, drums only, or turn sound off.");
     expect(markup).toContain("Adjust effect volume without changing gameplay.");
     expect(markup).toContain("Turn this off to wrap across the arena edges.");
     expect(markup).toContain(
