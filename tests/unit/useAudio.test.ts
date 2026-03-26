@@ -58,7 +58,7 @@ describe("useAudio", () => {
       wallsLethal: false,
       otherSnakeLethal: false,
       powerUpsEnabled: true,
-      monoSpeed: true,
+      monoSpeed: "fast",
     });
 
     expect(setSfxGainLevel).toHaveBeenCalledWith(0);
@@ -75,7 +75,7 @@ describe("useAudio", () => {
       wallsLethal: true,
       otherSnakeLethal: true,
       powerUpsEnabled: false,
-      monoSpeed: false,
+      monoSpeed: "slow",
     });
 
     expect(startMusic).toHaveBeenCalledWith("drums-only");
@@ -92,7 +92,7 @@ describe("useAudio", () => {
       wallsLethal: true,
       otherSnakeLethal: true,
       powerUpsEnabled: false,
-      monoSpeed: false,
+      monoSpeed: "slow",
     });
 
     expect(startMusic).toHaveBeenCalledWith("sfx-only");

@@ -1,8 +1,15 @@
-import { useCallback, useRef } from "react";
+import { useCallback } from "react";
 import { initAudio, resumeAudio, setSfxGainLevel } from "../audio/audioEngine";
-import { playEatSound, playCrashSound, playGameOverSound } from "../audio/sfx";
-import { startMusic, stopMusic, updateMusicTempo } from "../audio/music";
-import { GameEvent, GameSettings, GameState, SfxLevel } from "../engine/types";
+import { playEatSound, playCrashSound, playGameOverSound, playPowerUpSound } from "../audio/sfx";
+import {
+  startMusic,
+  stopMusic,
+  updateMusicTempo,
+  startInvincibilityMusic,
+  stopInvincibilityMusic,
+  isInvincibilityMusicActive,
+} from "../audio/music";
+import { GameEvent, GameSettings, GameState, SfxLevel, isPlayerInvincible } from "../engine/types";
 import { BASE_TICK_RATE, MAX_TICK_RATE } from "../engine/gameLoop";
 
 function sfxLevelToGain(level: SfxLevel): number {
@@ -17,17 +24,16 @@ function sfxLevelToGain(level: SfxLevel): number {
   }
 }
 
-export function useAudio() {
-  const initializedRef = useRef(false);
+function anyPlayerInvincible(state: GameState): boolean {
+  return state.players.some((p) => isPlayerInvincible(p, state.elapsedMs));
+}
 
+export function useAudio() {
   const ensureAudio = useCallback(() => {
-    if (!initializedRef.current) {
-      try {
-        initAudio();
-        initializedRef.current = true;
-      } catch {
-        // Audio not available
-      }
+    try {
+      initAudio();
+    } catch {
+      // Audio not available
     }
     resumeAudio();
   }, []);
@@ -42,28 +48,44 @@ export function useAudio() {
 
   const handleGameEvent = useCallback((event: GameEvent, state: GameState) => {
     const muted = state.settings.musicMode === "off";
+    const musicEnabled =
+      muted === false &&
+      state.settings.musicMode !== "sfx-only";
+
     switch (event.type) {
       case "food-eaten":
         if (!muted) playEatSound();
-        updateMusicTempo(
-          state.tickRate,
-          BASE_TICK_RATE,
-          MAX_TICK_RATE,
-          state.settings.musicMode,
-        );
+        if (!isInvincibilityMusicActive()) {
+          updateMusicTempo(
+            state.tickRate,
+            BASE_TICK_RATE,
+            MAX_TICK_RATE,
+            state.settings.musicMode,
+          );
+        }
         break;
       case "player-died":
         if (!muted) playCrashSound();
         break;
       case "effect-applied":
-        if (!muted && event.effect === "invincibility") {
-          playEatSound();
+        if (event.effect === "invincibility") {
+          if (!muted) playPowerUpSound();
+          if (musicEnabled) {
+            startInvincibilityMusic();
+          }
         }
         break;
       case "game-over":
         if (!muted) playGameOverSound();
         stopMusic();
         break;
+    }
+  }, []);
+
+  // Called every game tick (not during pause) to check invincibility expiry
+  const checkInvincibilityExpiry = useCallback((state: GameState) => {
+    if (isInvincibilityMusicActive() && !anyPlayerInvincible(state)) {
+      stopInvincibilityMusic();
     }
   }, []);
 
@@ -84,6 +106,7 @@ export function useAudio() {
     ensureAudio,
     applySettings,
     handleGameEvent,
+    checkInvincibilityExpiry,
     startGameAudio,
     stopGameAudio,
   };

@@ -164,7 +164,7 @@ export const MODE_CONFIG: Record<Exclude<MusicMode, "off" | "drums-only" | "sfx-
     bassType: "square",
     leadType: "square",
     harmonyType: "square",
-    baseBpm: 136,
+    baseBpm: 112,
     maxBpm: 208,
     swing: 0,
     hatPattern: [1, 1, 1, 1, 1, 1, 1, 1],
@@ -298,11 +298,13 @@ function scheduleBeat(): void {
     const gainNode = getMusicGain();
     if (!ctx || !gainNode) return;
 
-    const configKey =
-      currentMode === "drums-only" || currentMode === "sfx-only"
-        ? "neon-arcade"
-        : currentMode;
-    const config = MODE_CONFIG[configKey];
+    const config = invincibilityActive
+      ? INVINCIBILITY_CONFIG
+      : MODE_CONFIG[
+          currentMode === "drums-only" || currentMode === "sfx-only"
+            ? "neon-arcade"
+            : currentMode
+        ];
     const localStep = stepIndex % 8;
 
     try {
@@ -310,7 +312,7 @@ function scheduleBeat(): void {
       playSnare(ctx, gainNode, config, localStep);
       playHat(ctx, gainNode, config, localStep);
 
-      if (currentMode !== "drums-only") {
+      if (currentMode !== "drums-only" || invincibilityActive) {
         const phrase =
           Math.floor(stepIndex / 8) % 2 === 0
             ? config.leadPhraseA
@@ -331,11 +333,13 @@ function scheduleBeat(): void {
   const scheduleNext = () => {
     if (!musicNodes || currentMode === "off") return;
 
-    const configKey =
-      currentMode === "drums-only" || currentMode === "sfx-only"
-        ? "neon-arcade"
-        : currentMode;
-    const config = MODE_CONFIG[configKey];
+    const config = invincibilityActive
+      ? INVINCIBILITY_CONFIG
+      : MODE_CONFIG[
+          currentMode === "drums-only" || currentMode === "sfx-only"
+            ? "neon-arcade"
+            : currentMode
+        ];
     const baseInterval = 60000 / currentBpm / 2;
     const isOffBeat = stepIndex % 2 === 1;
     const interval = isOffBeat
@@ -528,6 +532,118 @@ function playHarmony(
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + duration + 0.01);
   }
+}
+
+// --- Invincibility music override ---
+
+let savedMode: MusicMode | null = null;
+let savedBpm = 0;
+let savedIntensity = 0;
+let savedStep = 0;
+let invincibilityActive = false;
+
+const INVINCIBILITY_CONFIG: MusicModeConfig = {
+  // Dm7 → Cmaj7 inspired loop, jubilant star-power feel
+  bassPattern: [146.83, 146.83, 130.81, 130.81, 146.83, 130.81, 146.83, 130.81],
+  leadPhraseA: [
+    { note: 587.33, length: 1, accent: 0.8 },
+    { note: 698.46, length: 1, accent: 0.5 },
+    { note: 880.0, length: 1, accent: 0.7 },
+    { note: 1046.5, length: 1, accent: 0.9 },
+    { note: 880.0, length: 1, accent: 0.5 },
+    { note: 783.99, length: 1, accent: 0.6 },
+    { note: 698.46, length: 1, accent: 0.4 },
+    { note: 783.99, length: 1, accent: 0.7 },
+  ],
+  leadPhraseB: [
+    { note: 523.25, length: 1, accent: 0.7 },
+    { note: 659.25, length: 1, accent: 0.5 },
+    { note: 783.99, length: 1, accent: 0.8 },
+    { note: 1046.5, length: 1, accent: 0.9 },
+    { note: 932.33, length: 1, accent: 0.6 },
+    { note: 783.99, length: 1, accent: 0.5 },
+    { note: 659.25, length: 1, accent: 0.4 },
+    { note: 523.25, length: 1, accent: 0.6 },
+  ],
+  harmonyPattern: [
+    { notes: [349.23, 440.0], length: 2, accent: 0.35 },
+    null,
+    { notes: [329.63, 392.0], length: 2, accent: 0.3 },
+    null,
+    { notes: [349.23, 440.0], length: 2, accent: 0.35 },
+    null,
+    { notes: [329.63, 392.0], length: 2, accent: 0.3 },
+    null,
+  ],
+  bassType: "square",
+  leadType: "square",
+  harmonyType: "square",
+  baseBpm: 150,
+  maxBpm: 150,
+  swing: 0.06,
+  hatPattern: [1, 1, 1, 1, 1, 1, 1, 1],
+  kickPattern: [1, 0, 1, 0, 1, 0, 1, 0],
+  snarePattern: [0, 0, 1, 0, 0, 0, 1, 0],
+};
+
+export function startInvincibilityMusic(): void {
+  if (invincibilityActive) return;
+
+  // Save current state
+  savedMode = currentMode;
+  savedBpm = currentBpm;
+  savedIntensity = currentIntensity;
+  savedStep = stepIndex;
+  invincibilityActive = true;
+
+  // Stop current music and start invincibility loop
+  stopMusic();
+
+  const ctx = getAudioContext();
+  const gainNode = getMusicGain();
+  if (!ctx || !gainNode) return;
+
+  try {
+    musicNodes = { timeoutId: null };
+    stepIndex = 0;
+    currentBpm = INVINCIBILITY_CONFIG.baseBpm;
+    currentIntensity = 0.8;
+    scheduleBeat();
+  } catch {
+    // Silent fallback
+  }
+}
+
+export function stopInvincibilityMusic(): void {
+  if (!invincibilityActive) return;
+  invincibilityActive = false;
+
+  stopMusic();
+
+  // Restore previous music
+  if (savedMode && savedMode !== "off" && savedMode !== "sfx-only") {
+    const ctx = getAudioContext();
+    const gainNode = getMusicGain();
+    if (!ctx || !gainNode) return;
+
+    const configKey = savedMode === "drums-only" ? "neon-arcade" : savedMode;
+    try {
+      musicNodes = { timeoutId: null };
+      currentMode = savedMode;
+      stepIndex = savedStep;
+      currentBpm = savedBpm;
+      currentIntensity = savedIntensity;
+      scheduleBeat();
+    } catch {
+      // Silent fallback
+    }
+  }
+
+  savedMode = null;
+}
+
+export function isInvincibilityMusicActive(): boolean {
+  return invincibilityActive;
 }
 
 export function isMusicPlaying(): boolean {
