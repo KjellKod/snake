@@ -59,7 +59,7 @@ export function playPowerUpSound(): void {
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = "square";
+      osc.type = "triangle";
       osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.07);
       gain.gain.setValueAtTime(0.08, ctx.currentTime + i * 0.07);
       gain.gain.exponentialRampToValueAtTime(
