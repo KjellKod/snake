@@ -11,6 +11,7 @@ import { useInput, TouchContext } from "./useInput";
 
 export interface GameLoopCallbacks {
   onEvent: (event: GameEvent, state: GameState) => void;
+  onTick?: (state: GameState) => void;
 }
 
 export function useGameLoop(
@@ -91,6 +92,7 @@ export function useGameLoop(
         for (const event of result.events) {
           callbacks.onEvent(event, result.state);
         }
+        callbacks.onTick?.(result.state);
       }
 
       rafRef.current = requestAnimationFrame(loop);
