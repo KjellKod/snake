@@ -61,7 +61,7 @@ export function playPowerUpSound(): void {
       const gain = ctx.createGain();
       osc.type = "square";
       osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.07);
-      gain.gain.setValueAtTime(0.13, ctx.currentTime + i * 0.07);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime + i * 0.07);
       gain.gain.exponentialRampToValueAtTime(
         0.01,
         ctx.currentTime + i * 0.07 + 0.12,
