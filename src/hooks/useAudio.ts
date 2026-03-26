@@ -9,7 +9,7 @@ import {
   stopInvincibilityMusic,
   isInvincibilityMusicActive,
 } from "../audio/music";
-import { GameEvent, GameSettings, GameState, SfxLevel, isPlayerInvincible } from "../engine/types";
+import { GameEvent, GameSettings, GameState, SfxLevel } from "../engine/types";
 import { BASE_TICK_RATE, MAX_TICK_RATE } from "../engine/gameLoop";
 
 function sfxLevelToGain(level: SfxLevel): number {
@@ -24,12 +24,9 @@ function sfxLevelToGain(level: SfxLevel): number {
   }
 }
 
-function anyPlayerInvincible(state: GameState): boolean {
-  return state.players.some((p) => isPlayerInvincible(p, state.elapsedMs));
-}
-
 export function useAudio() {
   const initializedRef = useRef(false);
+  const invincibilityTimerRef = useRef<number | null>(null);
 
   const ensureAudio = useCallback(() => {
     if (!initializedRef.current) {
@@ -49,6 +46,18 @@ export function useAudio() {
     } else {
       setSfxGainLevel(sfxLevelToGain(settings.sfxLevel));
     }
+  }, []);
+
+  const scheduleInvincibilityEnd = useCallback((remainingMs: number) => {
+    if (invincibilityTimerRef.current !== null) {
+      clearTimeout(invincibilityTimerRef.current);
+    }
+    invincibilityTimerRef.current = window.setTimeout(() => {
+      invincibilityTimerRef.current = null;
+      if (isInvincibilityMusicActive()) {
+        stopInvincibilityMusic();
+      }
+    }, remainingMs);
   }, []);
 
   const handleGameEvent = useCallback((event: GameEvent, state: GameState) => {
@@ -78,20 +87,21 @@ export function useAudio() {
           if (musicEnabled) {
             startInvincibilityMusic();
           }
+          const player = state.players[event.player];
+          const remainingMs = player.effects.invincibleUntilMs - state.elapsedMs;
+          scheduleInvincibilityEnd(remainingMs);
         }
         break;
       case "game-over":
         if (!muted) playGameOverSound();
+        if (invincibilityTimerRef.current !== null) {
+          clearTimeout(invincibilityTimerRef.current);
+          invincibilityTimerRef.current = null;
+        }
         stopMusic();
         break;
     }
-  }, []);
-
-  const checkInvincibilityExpiry = useCallback((state: GameState) => {
-    if (isInvincibilityMusicActive() && !anyPlayerInvincible(state)) {
-      stopInvincibilityMusic();
-    }
-  }, []);
+  }, [scheduleInvincibilityEnd]);
 
   const startGameAudio = useCallback(
     (settings: GameSettings) => {
@@ -103,6 +113,10 @@ export function useAudio() {
   );
 
   const stopGameAudio = useCallback(() => {
+    if (invincibilityTimerRef.current !== null) {
+      clearTimeout(invincibilityTimerRef.current);
+      invincibilityTimerRef.current = null;
+    }
     stopMusic();
   }, []);
 
@@ -110,7 +124,6 @@ export function useAudio() {
     ensureAudio,
     applySettings,
     handleGameEvent,
-    checkInvincibilityExpiry,
     startGameAudio,
     stopGameAudio,
   };
