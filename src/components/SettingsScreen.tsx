@@ -26,10 +26,10 @@ const SFX_OPTIONS: { value: SfxLevel; label: string }[] = [
 ];
 
 const MONO_SPEED_OPTIONS: { value: MonoSpeed; label: string }[] = [
-  { value: "off", label: "Off (Accelerating)" },
   { value: "slow", label: "Slow" },
   { value: "medium", label: "Medium" },
   { value: "fast", label: "Fast" },
+  { value: "accelerating", label: "Accelerating" },
 ];
 
 export function SettingsScreen({

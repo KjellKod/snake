@@ -66,7 +66,7 @@ describe("tick with settings and power-ups", () => {
     expect(result.state.food.kind).toBe("normal");
     expect(result.state.settings.wallsLethal).toBe(true);
     expect(result.state.settings.otherSnakeLethal).toBe(true);
-    expect(result.state.settings.monoSpeed).toBe("off");
+    expect(result.state.settings.monoSpeed).toBe("slow");
   });
 
   it("keeps the base tick rate when mono speed is set to fast", () => {
@@ -135,8 +135,8 @@ describe("tick with settings and power-ups", () => {
     expect(result.state.tickRate).toBe(6);
   });
 
-  it("accelerates tick rate when mono speed is off", () => {
-    const state = makeState(undefined, { monoSpeed: "off" });
+  it("accelerates tick rate when mono speed is set to accelerating", () => {
+    const state = makeState(undefined, { monoSpeed: "accelerating" });
     state.players[0].snake.segments = Array.from(
       { length: 12 },
       (_, index) => ({
@@ -154,7 +154,7 @@ describe("tick with settings and power-ups", () => {
 
     const result = move(state);
 
-    expect(result.state.tickRate).toBeGreaterThan(8);
+    expect(result.state.tickRate).toBeGreaterThan(4);
   });
 
   it("wraps a snake at the board edge when walls are non-lethal", () => {

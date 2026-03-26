@@ -326,7 +326,7 @@ function computeTickRate(monoSpeed: MonoSpeed, speedBoost: number): number {
     case "slow": return SLOW_TICK_RATE;
     case "medium": return MEDIUM_TICK_RATE;
     case "fast": return BASE_TICK_RATE;
-    case "off": return Math.min(BASE_TICK_RATE + speedBoost, MAX_TICK_RATE);
+    case "accelerating": return Math.min(SLOW_TICK_RATE + speedBoost, MAX_TICK_RATE);
   }
 }
 

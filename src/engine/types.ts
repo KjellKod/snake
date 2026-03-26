@@ -7,7 +7,7 @@ export type MusicMode =
   | "space-inspired"
   | "8-bit"
   | "techno-trance";
-export type MonoSpeed = "off" | "slow" | "medium" | "fast";
+export type MonoSpeed = "slow" | "medium" | "fast" | "accelerating";
 export type SfxLevel = "default" | "low" | "high";
 export type FoodKind = "normal" | "power-up";
 
@@ -94,7 +94,7 @@ export function createDefaultSettings(): GameSettings {
     wallsLethal: true,
     otherSnakeLethal: true,
     powerUpsEnabled: false,
-    monoSpeed: "off",
+    monoSpeed: "slow",
   };
 }
 
