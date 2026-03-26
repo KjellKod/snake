@@ -48,6 +48,34 @@ export function playCrashSound(): void {
   }
 }
 
+export function playPowerUpSound(): void {
+  const ctx = getAudioContext();
+  const sfxGain = getSfxGain();
+  if (!ctx || !sfxGain) return;
+
+  try {
+    // Ascending arpeggio: bright, triumphant pickup sound
+    const notes = [523.25, 659.25, 783.99, 1046.5];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "square";
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.07);
+      gain.gain.setValueAtTime(0.1, ctx.currentTime + i * 0.07);
+      gain.gain.exponentialRampToValueAtTime(
+        0.01,
+        ctx.currentTime + i * 0.07 + 0.12,
+      );
+      osc.connect(gain);
+      gain.connect(sfxGain);
+      osc.start(ctx.currentTime + i * 0.07);
+      osc.stop(ctx.currentTime + i * 0.07 + 0.12);
+    });
+  } catch {
+    // Silently fail
+  }
+}
+
 export function playGameOverSound(): void {
   const ctx = getAudioContext();
   const sfxGain = getSfxGain();
