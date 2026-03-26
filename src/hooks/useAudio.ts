@@ -68,17 +68,9 @@ export function useAudio() {
             state.settings.musicMode,
           );
         }
-        // Check if invincibility expired since last event
-        if (isInvincibilityMusicActive() && !anyPlayerInvincible(state)) {
-          stopInvincibilityMusic();
-        }
         break;
       case "player-died":
         if (!muted) playCrashSound();
-        // Player death ends invincibility music if no one is invincible
-        if (isInvincibilityMusicActive() && !anyPlayerInvincible(state)) {
-          stopInvincibilityMusic();
-        }
         break;
       case "effect-applied":
         if (event.effect === "invincibility") {
@@ -92,6 +84,12 @@ export function useAudio() {
         if (!muted) playGameOverSound();
         stopMusic();
         break;
+    }
+  }, []);
+
+  const checkInvincibilityExpiry = useCallback((state: GameState) => {
+    if (isInvincibilityMusicActive() && !anyPlayerInvincible(state)) {
+      stopInvincibilityMusic();
     }
   }, []);
 
@@ -112,6 +110,7 @@ export function useAudio() {
     ensureAudio,
     applySettings,
     handleGameEvent,
+    checkInvincibilityExpiry,
     startGameAudio,
     stopGameAudio,
   };
