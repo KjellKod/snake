@@ -164,7 +164,7 @@ export const MODE_CONFIG: Record<Exclude<MusicMode, "off" | "drums-only" | "sfx-
     bassType: "square",
     leadType: "square",
     harmonyType: "square",
-    baseBpm: 136,
+    baseBpm: 112,
     maxBpm: 208,
     swing: 0,
     hatPattern: [1, 1, 1, 1, 1, 1, 1, 1],
