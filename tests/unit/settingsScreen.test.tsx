@@ -77,10 +77,10 @@ describe("SettingsScreen", () => {
     const markup = renderToStaticMarkup(tree);
     const musicSelect = findElementByType(tree, "select", 0);
     const sfxSelect = findElementByType(tree, "select", 1);
+    const monoSpeedSelect = findElementByType(tree, "select", 2);
     const wallsToggle = findElementByType(tree, "input", 0);
     const otherSnakeToggle = findElementByType(tree, "input", 1);
     const powerUpsToggle = findElementByType(tree, "input", 2);
-    const monoSpeedToggle = findElementByType(tree, "input", 3);
     const backButton = findElementByType(tree, "button", 0);
     const startButton = findElementByType(tree, "button", 1);
 
@@ -102,10 +102,10 @@ describe("SettingsScreen", () => {
 
     musicSelect.props.onChange({ target: { value: "off" } });
     sfxSelect.props.onChange({ target: { value: "high" } });
+    monoSpeedSelect.props.onChange({ target: { value: "slow" } });
     wallsToggle.props.onChange({ target: { checked: false } });
     otherSnakeToggle.props.onChange({ target: { checked: false } });
     powerUpsToggle.props.onChange({ target: { checked: true } });
-    monoSpeedToggle.props.onChange({ target: { checked: true } });
     backButton.props.onClick();
     startButton.props.onClick();
 
@@ -119,19 +119,19 @@ describe("SettingsScreen", () => {
     } satisfies GameSettings);
     expect(onChange).toHaveBeenNthCalledWith(3, {
       ...initialSettings,
-      wallsLethal: false,
+      monoSpeed: "slow",
     } satisfies GameSettings);
     expect(onChange).toHaveBeenNthCalledWith(4, {
       ...initialSettings,
-      otherSnakeLethal: false,
+      wallsLethal: false,
     } satisfies GameSettings);
     expect(onChange).toHaveBeenNthCalledWith(5, {
       ...initialSettings,
-      powerUpsEnabled: true,
+      otherSnakeLethal: false,
     } satisfies GameSettings);
     expect(onChange).toHaveBeenNthCalledWith(6, {
       ...initialSettings,
-      monoSpeed: true,
+      powerUpsEnabled: true,
     } satisfies GameSettings);
     expect(onBack).toHaveBeenCalledTimes(1);
     expect(onStart).toHaveBeenCalledTimes(1);
