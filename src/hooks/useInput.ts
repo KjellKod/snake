@@ -18,28 +18,29 @@ export interface TouchContext {
   boardHeight: number;
 }
 
-/** Return [primary, secondary] directions based on touch relative to head. */
-function directionsFromTouch(
+export function directionsFromTouch(
   touchCanvasX: number,
   touchCanvasY: number,
   headCanvasX: number,
   headCanvasY: number,
   cellSize: number,
-): [Direction, Direction] | null {
+): [Direction, Direction | null] | null {
   const dx = touchCanvasX - headCanvasX;
   const dy = touchCanvasY - headCanvasY;
 
-  // Ignore taps very close to the head (within a quarter cell)
-  if (Math.abs(dx) < cellSize * 0.25 && Math.abs(dy) < cellSize * 0.25)
-    return null;
+  const deadZone = cellSize * 0.25;
+
+  if (Math.abs(dx) < deadZone && Math.abs(dy) < deadZone) return null;
 
   const horizontal: Direction = dx > 0 ? "right" : "left";
   const vertical: Direction = dy > 0 ? "down" : "up";
 
   if (Math.abs(dx) > Math.abs(dy)) {
-    return [horizontal, vertical];
+    const secondary = Math.abs(dy) < deadZone ? null : vertical;
+    return [horizontal, secondary];
   } else {
-    return [vertical, horizontal];
+    const secondary = Math.abs(dx) < deadZone ? null : horizontal;
+    return [vertical, secondary];
   }
 }
 
@@ -128,10 +129,10 @@ export function useInput(
 
       if (dirs !== null) {
         const currentDir = currentDirsRef.current.p1;
-        // Try primary direction; if it's opposite to current, fall back to secondary
-        const resolved =
-          resolveDirection(dirs[0], currentDir) ??
-          resolveDirection(dirs[1], currentDir);
+        const primary = resolveDirection(dirs[0], currentDir);
+        const secondary =
+          dirs[1] !== null ? resolveDirection(dirs[1], currentDir) : null;
+        const resolved = primary ?? secondary;
         if (resolved !== null) {
           inputRef.current.player1Dir = resolved;
         }
