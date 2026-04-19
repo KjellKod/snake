@@ -2,4 +2,5 @@
 .ws/
 node_modules/
 dist/
+dist-single/
 .vite/

@@ -15,6 +15,17 @@ npm run dev
 
 Open http://localhost:5173 in your browser.
 
+## Standalone single-file build
+
+Download [**standalone.html**](https://kjellkod.github.io/snake/standalone.html) — one self-contained HTML file (~178 KB) with React, game logic, and CSS all inlined. Double-click to play. No server, no install, works offline. Drag it into a Claude conversation (Claude.ai or Claude Desktop) and it renders as a playable Artifact right in the chat.
+
+Build it yourself with:
+
+```bash
+npm run build:single
+# → dist-single/index.html
+```
+
 ## What Each Command Does
 
 - `npm install` installs the project dependencies from `package.json`.
