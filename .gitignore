@@ -3,3 +3,7 @@
 node_modules/
 dist/
 .vite/
+dist-single/
+dist-mcpb/
+mcpb/node_modules/
+mcpb/dist/

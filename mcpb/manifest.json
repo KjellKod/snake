@@ -1,0 +1,28 @@
+{
+  "manifest_version": "0.3",
+  "name": "snake",
+  "display_name": "Snake",
+  "version": "0.1.0",
+  "description": "Play the classic snake game inline in your Claude conversation.",
+  "author": {
+    "name": "Kjell Hedstrom"
+  },
+  "license": "MIT",
+  "icon": "icon.png",
+  "server": {
+    "type": "node",
+    "entry_point": "server.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "server.js"
+      ]
+    }
+  },
+  "tools": [
+    {
+      "name": "play_snake",
+      "description": "Launch the snake game inline"
+    }
+  ]
+}

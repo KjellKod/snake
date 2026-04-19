@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:single": "cd mcpb && npm run build:single",
+    "build:mcpb": "sh ./mcpb/pack.sh",
     "preview": "vite preview",
     "test": "vitest run"
   },

@@ -53,13 +53,26 @@ Click **Start** to begin. One player dying doesn't end the game — the survivor
 ```bash
 npm run dev      # Start dev server
 npm run build    # Production build
+npm run build:single  # Build a single self-contained HTML file in dist-single/
+npm run build:mcpb    # Build snake.mcpb bundle in dist-mcpb/
 npm run preview  # Preview production build
 npm test         # Run unit tests
 ```
+
+## Standalone Single-File Build
+
+Run `npm run build:single` to produce `dist-single/index.html` as a single-file build with inlined assets.
+
+### Install in Claude Desktop
+
+1. Download `snake.mcpb` from the latest GitHub Release.
+2. Double-click the file (or drag it into Claude Desktop) to install.
+3. In any conversation, ask Claude to `play snake`.
+4. This is an intentional showcase bundle: the MCP server only exposes one tool and one UI resource, and MCPB is used as a delivery mechanism for a native one-click inline widget install.
 
 ## Tech Stack
 
 - **React 18** + **TypeScript** + **Vite**
 - **Canvas API** for rendering (neon glow, particles, screen shake)
 - **Web Audio API** for procedural sound effects and dynamic background music
-- **Vitest** for unit testing (58 tests)
+- **Vitest** for unit testing (87 tests)
