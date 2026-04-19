@@ -621,12 +621,11 @@ export function stopInvincibilityMusic(): void {
   stopMusic();
 
   // Restore previous music
-  if (savedMode && savedMode !== "off" && savedMode !== "sfx-only") {
+  if (currentMode !== "off" && currentMode !== "sfx-only" && savedMode) {
     const ctx = getAudioContext();
     const gainNode = getMusicGain();
     if (!ctx || !gainNode) return;
 
-    const configKey = savedMode === "drums-only" ? "neon-arcade" : savedMode;
     try {
       musicNodes = { timeoutId: null };
       currentMode = savedMode;
