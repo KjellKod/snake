@@ -75,6 +75,16 @@ cp -R "$PROD_INSTALL_DIR/node_modules" "$PACK_DIR/node_modules"
 mkdir -p "$OUTPUT_DIR"
 rm -f "$OUTPUT_FILE"
 cd "$PACK_DIR"
-zip -r "$OUTPUT_FILE" . -x "*.DS_Store"
+zip -rq "$OUTPUT_FILE" . -x "*.DS_Store"
 
 rm -rf "$PACK_DIR" "$PROD_INSTALL_DIR"
+
+BUNDLE_SIZE=$(du -h "$OUTPUT_FILE" | awk '{print $1}')
+BUNDLE_FILES=$(unzip -l "$OUTPUT_FILE" | tail -1 | awk '{print $2}')
+printf '\n'
+printf '  Built snake.mcpb\n'
+printf '  ----------------\n'
+printf '  Path:   %s\n' "$OUTPUT_FILE"
+printf '  Size:   %s (%s files)\n' "$BUNDLE_SIZE" "$BUNDLE_FILES"
+printf '  Install: double-click the .mcpb or drag it into Claude Desktop\n'
+printf '\n'
