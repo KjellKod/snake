@@ -17,5 +17,5 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src", "tests"],
-  "exclude": ["node_modules", "mcpb", "tests/unit/mcpbRegistration.test.ts"]
+  "exclude": ["node_modules", "mcpb"]
 }
