@@ -4,7 +4,7 @@
 Implements the approved plan. Writes code, runs tests, produces a PR description.
 
 ## Tool
-Codex (`mcp__codex__codex`) by default, with Claude (`Task(subagent_type="builder")`) as fallback.
+Codex (`mcp__codex-cli__codex`) by default, with Claude runtime as fallback. Use native `Task(subagent_type="builder")` when the orchestrator supports Claude tasks; in Codex-led Quest runs, use `python3 scripts/quest_claude_runner.py` for the Claude fallback path. `scripts/quest_claude_bridge.py` remains the transport layer behind that runner.
 
 When running on Codex, this role is non-interactive:
 - Do not ask questions.
@@ -24,7 +24,8 @@ When running on Codex, this role is non-interactive:
 2. Implement changes following the plan step by step
 3. Run tests after each significant change
 4. Write PR description to `.quest/<quest_id>/phase_02_implementation/pr_description.md` following the format in `.skills/pr-assistant/SKILL.md`
-5. Record decisions in `.quest/<quest_id>/phase_02_implementation/builder_feedback_discussion.md`
+5. Record decisions, touched files, and tests run in `.quest/<quest_id>/phase_02_implementation/builder_feedback_discussion.md`
+6. Record assumptions not covered by the plan in the Decision Log using the `ASSUMPTION` format from `.skills/implementer/SKILL.md` "Stop on impactful uncertainty"
 
 ## Input
 - Approved plan (`.quest/<id>/phase_01_plan/plan.md`)
@@ -55,7 +56,7 @@ SUMMARY: <one line>
 Both steps are required. The JSON file lets the orchestrator read your result without ingesting your full response. The text block is the backward-compatible fallback.
 
 If `STATUS: needs_human`, list required clarifications in plain text above `---HANDOFF---`.
-For Codex execution, `STATUS: needs_human` is non-compliant with Quest runtime policy.
+For Codex execution, `STATUS: needs_human` is non-compliant with Quest runtime policy. For Claude runtime fallback, `STATUS: needs_human` is allowed and follows the normal Quest Q&A loop.
 
 ## Allowed Actions
 - Read any file in the repo

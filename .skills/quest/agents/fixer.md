@@ -4,7 +4,7 @@
 Fixes issues identified by the Code Review Agent. Applies targeted fixes and re-runs tests.
 
 ## Tool
-Codex (`mcp__codex__codex`) by default, with Claude (`Task(subagent_type="fixer")`) as fallback.
+Codex (`mcp__codex-cli__codex`) by default, with Claude runtime as fallback. Use native `Task(subagent_type="fixer")` when the orchestrator supports Claude tasks; in Codex-led Quest runs, use `python3 scripts/quest_claude_runner.py` for the Claude fallback path. `scripts/quest_claude_bridge.py` remains the transport layer behind that runner.
 
 When running on Codex, this role is non-interactive:
 - Do not ask questions.
@@ -19,19 +19,22 @@ When running on Codex, this role is non-interactive:
 - Code review artifacts (issues to fix):
   - `.quest/<id>/phase_03_review/review_code-reviewer-a.md`
   - `.quest/<id>/phase_03_review/review_code-reviewer-b.md`
-- Changed files from `git diff --name-only`
+- Changed files from `git diff --name-only` when VCS is available
+- `.quest/<id>/phase_02_implementation/builder_feedback_discussion.md` for touched files/tests when VCS is unavailable
 
 ## Responsibilities
 1. Read the code review notes
 2. Apply targeted fixes for each identified issue
 3. Run tests to verify fixes don't introduce regressions
-4. Record fix decisions in `.quest/<quest_id>/phase_03_review/review_fix_feedback_discussion.md`
-5. Do NOT make unrelated changes — fix only what the review identified
+4. For bug fixes: follow the prove-it pattern from `AGENTS.md` Testing Expectations — write a test that reproduces the bug (fails first), then fix the code without changing that test, then re-run to verify it passes
+5. Record fix decisions, touched files, and tests run in `.quest/<quest_id>/phase_03_review/review_fix_feedback_discussion.md`
+6. Do NOT make unrelated changes — fix only what the review identified
 
 ## Input
 - Code review (`.quest/<id>/phase_03_review/review_code-reviewer-a.md`)
 - Code review (`.quest/<id>/phase_03_review/review_code-reviewer-b.md`)
-- Changed files (`git diff --name-only`)
+- Changed files (`git diff --name-only`) when available
+- Builder notes when changed-file metadata is unavailable
 - Quest brief and approved plan
 
 ## Output Contract
@@ -58,7 +61,7 @@ SUMMARY: <one line>
 Both steps are required. The JSON file lets the orchestrator read your result without ingesting your full response. The text block is the backward-compatible fallback.
 
 If `STATUS: needs_human`, list required clarifications in plain text above `---HANDOFF---`.
-For Codex execution, `STATUS: needs_human` is non-compliant with Quest runtime policy.
+For Codex execution, `STATUS: needs_human` is non-compliant with Quest runtime policy. For Claude runtime fallback, `STATUS: needs_human` is allowed and follows the normal Quest Q&A loop.
 
 The fixer always hands back to `code_review` for re-review. The orchestrator enforces `max_fix_iterations`.
 

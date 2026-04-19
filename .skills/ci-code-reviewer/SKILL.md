@@ -71,7 +71,7 @@ If description exists but is very thin (fewer than ~20 words, little context):
 
 ### Step 0.1: Manifest Validation (Mandatory)
 
-Run `./scripts/validate-manifest.sh`.
+Run `./scripts/quest_validate-manifest.sh`.
 
 - If it fails, flag **Must fix** with the failing file/path details.
 - If PR adds or renames files under Quest-managed paths, verify `.quest-manifest`
@@ -157,8 +157,8 @@ If acceptance criteria are available from Step 0.5:
 2. If missing, flag as **Must fix**.
 
 For workflow/config/skill-only changes, acceptable evidence can include:
-- `./scripts/validate-manifest.sh`
-- `./scripts/validate-quest-config.sh`
+- `./scripts/quest_validate-manifest.sh`
+- `./scripts/quest_validate-quest-config.sh`
 - Manual GitHub runtime verification steps when CI event behavior is required
 
 If no criteria are available:
@@ -217,6 +217,21 @@ Brevity rules:
 - Clean review output should be short (PR description line + summary + APPROVE).
 - Do not pad with empty PASS sections.
 - Keep total output under 30 lines when possible.
+
+## Signature
+
+Append this block at the end of every PR review comment:
+
+```html
+<pre>
+     ▐▛███▜▌
+    ▝▜█████▛▘
+      ▘▘ ▝▝
+<agent name and model> in Collaboration with <github username>
+</pre>
+```
+
+Replace agent name/model and github username with the actual values.
 
 ---
 
