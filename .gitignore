@@ -7,3 +7,5 @@ dist-single/
 dist-mcpb/
 mcpb/node_modules/
 mcpb/dist/
+__pycache__/
+*.pyc
