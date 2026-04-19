@@ -16,5 +16,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Install mcpb dependencies
+        run: cd mcpb && npm ci
       - run: npx vitest run
       - run: npm run build
