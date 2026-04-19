@@ -82,6 +82,7 @@ export function useAudio() {
     }
   }, []);
 
+  // Called every game tick (not during pause) to check invincibility expiry
   const checkInvincibilityExpiry = useCallback((state: GameState) => {
     if (isInvincibilityMusicActive() && !anyPlayerInvincible(state)) {
       stopInvincibilityMusic();

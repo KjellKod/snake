@@ -18,6 +18,7 @@ export interface TouchContext {
   boardHeight: number;
 }
 
+/** Return [primary, secondary] directions based on touch relative to head. */
 export function directionsFromTouch(
   touchCanvasX: number,
   touchCanvasY: number,
@@ -30,6 +31,7 @@ export function directionsFromTouch(
 
   const deadZone = cellSize * 0.25;
 
+  // Ignore taps very close to the head (within a quarter cell)
   if (Math.abs(dx) < deadZone && Math.abs(dy) < deadZone) return null;
 
   const horizontal: Direction = dx > 0 ? "right" : "left";
@@ -129,6 +131,8 @@ export function useInput(
 
       if (dirs !== null) {
         const currentDir = currentDirsRef.current.p1;
+        // Try primary direction; fall back to secondary if it's opposite to current
+        // and a secondary direction was actually intended (i.e. non-null minor axis).
         const primary = resolveDirection(dirs[0], currentDir);
         const secondary =
           dirs[1] !== null ? resolveDirection(dirs[1], currentDir) : null;
