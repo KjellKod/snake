@@ -43,7 +43,7 @@ export function createInitialState(
     board,
     players,
     food: spawnFoodState(board, players, settings, 1),
-    tickRate: BASE_TICK_RATE,
+    tickRate: computeTickRate(settings.monoSpeed, 0),
     settings,
     elapsedMs: 0,
   };
