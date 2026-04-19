@@ -1,10 +1,13 @@
 export type Direction = "up" | "down" | "left" | "right";
 export type MusicMode =
   | "off"
+  | "drums-only"
+  | "sfx-only"
   | "neon-arcade"
   | "space-inspired"
   | "8-bit"
   | "techno-trance";
+export type MonoSpeed = "slow" | "medium" | "fast" | "accelerating";
 export type SfxLevel = "default" | "low" | "high";
 export type FoodKind = "normal" | "power-up";
 
@@ -45,7 +48,7 @@ export interface GameSettings {
   wallsLethal: boolean;
   otherSnakeLethal: boolean;
   powerUpsEnabled: boolean;
-  monoSpeed: boolean;
+  monoSpeed: MonoSpeed;
 }
 
 export interface FoodState {
@@ -91,7 +94,7 @@ export function createDefaultSettings(): GameSettings {
     wallsLethal: true,
     otherSnakeLethal: true,
     powerUpsEnabled: false,
-    monoSpeed: false,
+    monoSpeed: "slow",
   };
 }
 

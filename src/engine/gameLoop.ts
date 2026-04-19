@@ -6,6 +6,7 @@ import {
   GameSettings,
   FoodState,
   PlayerState,
+  MonoSpeed,
   createDefaultSettings,
   createPlayerEffects,
   isPlayerInvincible,
@@ -20,6 +21,8 @@ const DEFAULT_BOARD_WIDTH = 20;
 const DEFAULT_BOARD_HEIGHT = 20;
 const BASE_TICK_RATE = 8;
 const MAX_TICK_RATE = 12;
+const SLOW_TICK_RATE = 4;
+const MEDIUM_TICK_RATE = 6;
 const SLOWDOWN_DURATION_MS = 15_000;
 const INVINCIBILITY_DURATION_MS = 15_000;
 const POWER_UP_INTERVAL = 10;
@@ -173,9 +176,7 @@ export function tick(
   const totalLength =
     newPlayers[0].snake.segments.length + newPlayers[1].snake.segments.length;
   const speedBoost = Math.floor(totalLength / 5) * 0.5;
-  const tickRate = state.settings.monoSpeed
-    ? BASE_TICK_RATE
-    : Math.min(BASE_TICK_RATE + speedBoost, MAX_TICK_RATE);
+  const tickRate = computeTickRate(state.settings.monoSpeed, speedBoost);
 
   const nextState: GameState = {
     ...state,
@@ -320,6 +321,15 @@ function isHeadOnHead(players: [PlayerState, PlayerState]): boolean {
   );
 }
 
+function computeTickRate(monoSpeed: MonoSpeed, speedBoost: number): number {
+  switch (monoSpeed) {
+    case "slow": return SLOW_TICK_RATE;
+    case "medium": return MEDIUM_TICK_RATE;
+    case "fast": return BASE_TICK_RATE;
+    case "accelerating": return Math.min(SLOW_TICK_RATE + speedBoost, MAX_TICK_RATE);
+  }
+}
+
 function samePosition(
   a: { x: number; y: number },
   b: { x: number; y: number },
@@ -330,6 +340,8 @@ function samePosition(
 export {
   BASE_TICK_RATE,
   MAX_TICK_RATE,
+  SLOW_TICK_RATE,
+  MEDIUM_TICK_RATE,
   SLOWDOWN_DURATION_MS,
   INVINCIBILITY_DURATION_MS,
   POWER_UP_INTERVAL,

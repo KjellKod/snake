@@ -1,6 +1,6 @@
 import { ChangeEvent } from "react";
 import { playHoverSound, playClickSound } from "../audio/uiSounds";
-import { GameSettings, MusicMode, SfxLevel } from "../engine/types";
+import { GameSettings, MonoSpeed, MusicMode, SfxLevel } from "../engine/types";
 
 interface SettingsScreenProps {
   settings: GameSettings;
@@ -14,6 +14,8 @@ const MUSIC_OPTIONS: { value: MusicMode; label: string }[] = [
   { value: "space-inspired", label: "Space Inspired" },
   { value: "8-bit", label: "8-Bit" },
   { value: "techno-trance", label: "Techno Trance" },
+  { value: "drums-only", label: "Drums Only" },
+  { value: "sfx-only", label: "SFX Only" },
   { value: "off", label: "Off" },
 ];
 
@@ -21,6 +23,13 @@ const SFX_OPTIONS: { value: SfxLevel; label: string }[] = [
   { value: "low", label: "Low" },
   { value: "default", label: "Default" },
   { value: "high", label: "High" },
+];
+
+const MONO_SPEED_OPTIONS: { value: MonoSpeed; label: string }[] = [
+  { value: "slow", label: "Slow" },
+  { value: "medium", label: "Medium" },
+  { value: "fast", label: "Fast" },
+  { value: "accelerating", label: "Accelerating" },
 ];
 
 export function SettingsScreen({
@@ -41,7 +50,7 @@ export function SettingsScreen({
     <
       K extends keyof Pick<
         GameSettings,
-        "wallsLethal" | "otherSnakeLethal" | "powerUpsEnabled" | "monoSpeed"
+        "wallsLethal" | "otherSnakeLethal" | "powerUpsEnabled"
       >,
     >(
       key: K,
@@ -49,6 +58,10 @@ export function SettingsScreen({
     (event: ChangeEvent<HTMLInputElement>) => {
       onChange({ ...settings, [key]: event.target.checked });
     };
+
+  const handleMonoSpeedChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    onChange({ ...settings, monoSpeed: event.target.value as MonoSpeed });
+  };
 
   return (
     <div className="settings-screen">
@@ -60,7 +73,7 @@ export function SettingsScreen({
       <div className="settings-grid">
         <label className="settings-field">
           <span>Music</span>
-          <small>Pick the background track or turn music off.</small>
+          <small>Pick a background track, drums only, or turn sound off.</small>
           <select value={settings.musicMode} onChange={handleMusicChange}>
             {MUSIC_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -123,18 +136,18 @@ export function SettingsScreen({
           />
         </label>
 
-        <label className="settings-toggle">
-          <div>
-            <span>Mono Speed</span>
-            <small>
-              Keep the match at one steady speed instead of speeding up.
-            </small>
-          </div>
-          <input
-            type="checkbox"
-            checked={settings.monoSpeed}
-            onChange={handleToggle("monoSpeed")}
-          />
+        <label className="settings-field">
+          <span>Mono Speed</span>
+          <small>
+            Keep the match at one steady speed instead of speeding up.
+          </small>
+          <select value={settings.monoSpeed} onChange={handleMonoSpeedChange}>
+            {MONO_SPEED_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </label>
       </div>
 

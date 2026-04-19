@@ -63,6 +63,7 @@ export function App() {
     ensureAudio,
     applySettings,
     handleGameEvent,
+    checkInvincibilityExpiry,
     startGameAudio,
     stopGameAudio,
   } = useAudio();
@@ -96,7 +97,7 @@ export function App() {
   );
 
   const { gameState, start, stop, paused, togglePause } = useGameLoop(
-    { onEvent },
+    { onEvent, onTick: checkInvincibilityExpiry },
     canvasRef,
     phase === "playing",
   );

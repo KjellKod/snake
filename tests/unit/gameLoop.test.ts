@@ -66,11 +66,11 @@ describe("tick with settings and power-ups", () => {
     expect(result.state.food.kind).toBe("normal");
     expect(result.state.settings.wallsLethal).toBe(true);
     expect(result.state.settings.otherSnakeLethal).toBe(true);
-    expect(result.state.settings.monoSpeed).toBe(false);
+    expect(result.state.settings.monoSpeed).toBe("slow");
   });
 
-  it("keeps the base tick rate when mono speed is enabled", () => {
-    const state = makeState(undefined, { monoSpeed: true });
+  it("keeps the base tick rate when mono speed is set to fast", () => {
+    const state = makeState(undefined, { monoSpeed: "fast" });
     state.players[0].snake.segments = Array.from(
       { length: 12 },
       (_, index) => ({
@@ -89,6 +89,72 @@ describe("tick with settings and power-ups", () => {
     const result = move(state);
 
     expect(result.state.tickRate).toBe(8);
+  });
+
+  it("keeps the slow tick rate when mono speed is set to slow", () => {
+    const state = makeState(undefined, { monoSpeed: "slow" });
+    state.players[0].snake.segments = Array.from(
+      { length: 12 },
+      (_, index) => ({
+        x: 3 + index,
+        y: 10,
+      }),
+    );
+    state.players[1].snake.segments = Array.from(
+      { length: 10 },
+      (_, index) => ({
+        x: 16 - index,
+        y: 12,
+      }),
+    );
+
+    const result = move(state);
+
+    expect(result.state.tickRate).toBe(4);
+  });
+
+  it("keeps the medium tick rate when mono speed is set to medium", () => {
+    const state = makeState(undefined, { monoSpeed: "medium" });
+    state.players[0].snake.segments = Array.from(
+      { length: 12 },
+      (_, index) => ({
+        x: 3 + index,
+        y: 10,
+      }),
+    );
+    state.players[1].snake.segments = Array.from(
+      { length: 10 },
+      (_, index) => ({
+        x: 16 - index,
+        y: 12,
+      }),
+    );
+
+    const result = move(state);
+
+    expect(result.state.tickRate).toBe(6);
+  });
+
+  it("accelerates tick rate when mono speed is set to accelerating", () => {
+    const state = makeState(undefined, { monoSpeed: "accelerating" });
+    state.players[0].snake.segments = Array.from(
+      { length: 12 },
+      (_, index) => ({
+        x: 3 + index,
+        y: 10,
+      }),
+    );
+    state.players[1].snake.segments = Array.from(
+      { length: 10 },
+      (_, index) => ({
+        x: 16 - index,
+        y: 12,
+      }),
+    );
+
+    const result = move(state);
+
+    expect(result.state.tickRate).toBeGreaterThan(4);
   });
 
   it("wraps a snake at the board edge when walls are non-lethal", () => {

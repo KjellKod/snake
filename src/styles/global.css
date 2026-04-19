@@ -162,6 +162,7 @@ body {
 .settings-toggle small {
   color: var(--text-secondary);
   line-height: 1.5;
+  margin-top: 4px;
 }
 
 .settings-field select {
@@ -366,11 +367,70 @@ canvas {
     font-size: 2.5rem;
   }
 
-  .settings-screen {
-    padding: 18px;
+  body:has(.settings-screen) {
+    overflow: auto;
   }
 
-  .settings-actions,
+  body:has(.settings-screen) #root {
+    align-items: flex-start;
+  }
+
+  .settings-screen {
+    padding: 18px;
+    padding-top: 24px;
+    padding-bottom: 100px;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .settings-screen h1 {
+    font-size: 1.8rem;
+  }
+
+  .settings-intro {
+    font-size: 0.85rem;
+    margin-bottom: 14px;
+  }
+
+  .settings-grid {
+    gap: 10px;
+  }
+
+  .settings-field,
+  .settings-toggle {
+    padding: 10px;
+  }
+
+  .settings-field small,
+  .settings-toggle small {
+    font-size: 0.75rem;
+  }
+
+  .settings-toggle input {
+    width: 28px;
+    height: 28px;
+  }
+
+  .settings-actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    flex-direction: row;
+    padding: 14px 18px;
+    margin-top: 0;
+    background: rgba(5, 10, 25, 0.96);
+    border-top: 1px solid rgba(0, 255, 255, 0.25);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+  }
+
+  .settings-actions .settings-button {
+    flex: 1;
+    padding: 14px 12px;
+    font-size: 1rem;
+  }
+
   .status-bar {
     flex-direction: column;
   }

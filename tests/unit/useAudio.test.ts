@@ -48,7 +48,7 @@ describe("useAudio", () => {
     expect(startMusic).toHaveBeenCalledWith("neon-arcade");
   });
 
-  it("applies selected music and sfx settings before game audio starts", async () => {
+  it("off mode mutes all sound including sfx", async () => {
     const { useAudio } = await import("../../src/hooks/useAudio");
     const audio = useAudio();
 
@@ -58,10 +58,44 @@ describe("useAudio", () => {
       wallsLethal: false,
       otherSnakeLethal: false,
       powerUpsEnabled: true,
-      monoSpeed: true,
+      monoSpeed: "fast",
     });
 
-    expect(setSfxGainLevel).toHaveBeenCalledWith(0.55);
+    expect(setSfxGainLevel).toHaveBeenCalledWith(0);
     expect(startMusic).toHaveBeenCalledWith("off");
+  });
+
+  it("drums-only mode starts music and applies sfx gain normally", async () => {
+    const { useAudio } = await import("../../src/hooks/useAudio");
+    const audio = useAudio();
+
+    audio.startGameAudio({
+      musicMode: "drums-only",
+      sfxLevel: "default",
+      wallsLethal: true,
+      otherSnakeLethal: true,
+      powerUpsEnabled: false,
+      monoSpeed: "slow",
+    });
+
+    expect(startMusic).toHaveBeenCalledWith("drums-only");
+    expect(setSfxGainLevel).toHaveBeenCalledWith(1);
+  });
+
+  it("sfx-only mode does not start music sequencer but keeps sfx gain", async () => {
+    const { useAudio } = await import("../../src/hooks/useAudio");
+    const audio = useAudio();
+
+    audio.startGameAudio({
+      musicMode: "sfx-only",
+      sfxLevel: "high",
+      wallsLethal: true,
+      otherSnakeLethal: true,
+      powerUpsEnabled: false,
+      monoSpeed: "slow",
+    });
+
+    expect(startMusic).toHaveBeenCalledWith("sfx-only");
+    expect(setSfxGainLevel).toHaveBeenCalledWith(1.35);
   });
 });
