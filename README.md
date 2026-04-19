@@ -26,6 +26,7 @@ npm run build:single
 # → dist-single/index.html
 ```
 
+
 ## What Each Command Does
 
 - `npm install` installs the project dependencies from `package.json`.
