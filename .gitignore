@@ -5,4 +5,4 @@ dist/
 dist-single/
 .vite/
 dist-play/
-play/plugin/skills/*/assets/*.html
+play/skills/*/assets/*.html

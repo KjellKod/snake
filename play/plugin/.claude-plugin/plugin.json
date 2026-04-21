@@ -1,8 +1,0 @@
-{
-  "name": "play",
-  "version": "0.1.0",
-  "description": "A game launcher for Claude. Launch Snake with /play:snake.",
-  "author": {
-    "name": "KjellKod"
-  }
-}

@@ -4,7 +4,7 @@ set -eu
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 REPO_ROOT="$(CDPATH= cd -- "${SCRIPT_DIR}/.." && pwd)"
 SOURCE_HTML="${REPO_ROOT}/dist-single/index.html"
-ASSET_HTML="${REPO_ROOT}/play/plugin/skills/snake/assets/snake.html"
+ASSET_HTML="${REPO_ROOT}/play/skills/snake/assets/snake.html"
 PLUGIN_PATH="${REPO_ROOT}/dist-play/play.plugin"
 ZIP_PATH="${REPO_ROOT}/dist-play/play.zip"
 
@@ -13,14 +13,14 @@ if [ ! -f "${SOURCE_HTML}" ]; then
   exit 1
 fi
 
-mkdir -p "${REPO_ROOT}/play/plugin/skills/snake/assets"
+mkdir -p "${REPO_ROOT}/play/skills/snake/assets"
 cp "${SOURCE_HTML}" "${ASSET_HTML}"
 
 mkdir -p "${REPO_ROOT}/dist-play"
 rm -f "${PLUGIN_PATH}" "${ZIP_PATH}"
 
 cd "${REPO_ROOT}/play"
-zip -r ../dist-play/play.plugin . -x "*.DS_Store" -x "pack.sh" -x "README.md"
+zip -r ../dist-play/play.plugin . -x "*.DS_Store" -x "pack.sh" -x "README.md" -x "*.gitkeep"
 # Produce a .zip copy for the Claude web upload dialog, which currently
 # only accepts .zip extensions (see play/README.md install notes).
 cp "${PLUGIN_PATH}" "${ZIP_PATH}"

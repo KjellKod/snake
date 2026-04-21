@@ -1,0 +1,9 @@
+{
+  "name": "play",
+  "description": "Play classic games inline in Claude. Triggers on 'play snake' or /play:snake.",
+  "version": "0.1.0",
+  "author": {
+    "name": "KjellKod",
+    "email": "kjell.hedstrom@gmail.com"
+  }
+}

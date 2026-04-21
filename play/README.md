@@ -1,38 +1,32 @@
-# play/ — Claude `/play` plugin marketplace
+# play/ — Claude `/play` plugin
 
-This directory is a Claude plugin **marketplace** shipping one plugin (`play`) that provides one skill (`snake`). The marketplace wrapper is what makes the archive installable — a bare `plugin.json` alone is not accepted by Claude's plugin system, which is why uploads fail with "upload failed" if the archive is missing `.claude-plugin/marketplace.json`.
+This directory is the source for the Claude `/play` plugin that ships the Snake game. Run `npm run build:play` from the repo root to produce `dist-play/play.plugin` and `dist-play/play.zip` (same archive bytes under two extensions).
 
-Layout (matches Anthropic's canonical marketplace-with-subdirectory plugin pattern):
+Layout matches Anthropic's own `claude-plugins-official` repo for a skills-only plugin (e.g. `plugins/claude-code-setup/`):
+
 ```
 play/
 ├── .claude-plugin/
-│   └── marketplace.json        ← makes the archive installable (points at ./plugin)
-├── plugin/                     ← the single plugin
-│   ├── .claude-plugin/
-│   │   └── plugin.json         ← plugin name="play" → /play:<skill>
-│   └── skills/
-│       └── snake/SKILL.md      ← skill name="snake" → /play:snake
+│   └── plugin.json           ← plugin name="play" → /play:<skill>
+├── skills/
+│   └── snake/
+│       ├── SKILL.md          ← skill name="snake" → /play:snake
+│       └── assets/snake.html ← build artifact (gitignored)
 └── pack.sh
 ```
-
-Run `npm run build:play` from the repo root to produce `dist-play/play.plugin` and `dist-play/play.zip` (same archive bytes under two extensions).
 
 ## Install
 
 **Claude Desktop** — drag `play.plugin` into the Claude Desktop window.
 
-**Claude web / Cowork (organization)** — at time of writing the upload dialog rejects the `.plugin` extension, so use `play.zip` instead:
-1. Organization settings → Plugins
-2. "Add plugins" → "Upload a file"
-3. Pick `play.zip`
+**Claude web (Personal → Local uploads)** — Plugins directory → **Personal** tab → **Local uploads** → **+** → **Upload local plugin** → pick `play.plugin` (or `play.zip` if the `.plugin` extension is rejected on your platform).
 
-**Local install from a clone** (developer flow):
+**Local install from a clone** (developer flow, via a tiny marketplace wrapper Claude Code CLI expects):
 ```bash
-claude plugin marketplace add "$(pwd)/play" --scope local
-claude plugin install play@play --scope local
+# Claude Code CLI marketplace install requires a marketplace.json.
+# You can script this with a temp directory — see the repo-level CI script.
+# Simpler: clone, build, drag the resulting .plugin into Claude Desktop.
 ```
-
-`play.plugin` and `play.zip` are literally the same archive bytes; the dual extension is a workaround for the upload dialog's file-filter, not a repackaging.
 
 ## Trigger
 

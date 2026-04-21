@@ -6,7 +6,7 @@ const { readFileSync } = require("fs");
 describe("play plugin contract", () => {
   it('plugin.json parses with name="play" and semver version', () => {
     const pluginJson = readFileSync(
-      new URL("../../play/plugin/.claude-plugin/plugin.json", import.meta.url),
+      new URL("../../play/.claude-plugin/plugin.json", import.meta.url),
       "utf8",
     );
     const parsed = JSON.parse(pluginJson) as { name?: string; version?: string };
@@ -15,27 +15,22 @@ describe("play plugin contract", () => {
     expect(parsed.version).toMatch(/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/);
   });
 
-  it('marketplace.json references the play plugin by name', () => {
-    const marketplaceJson = readFileSync(
-      new URL("../../play/.claude-plugin/marketplace.json", import.meta.url),
+  it('plugin.json author has both name and email', () => {
+    const pluginJson = readFileSync(
+      new URL("../../play/.claude-plugin/plugin.json", import.meta.url),
       "utf8",
     );
-    const parsed = JSON.parse(marketplaceJson) as {
-      name?: string;
-      owner?: { name?: string };
-      plugins?: Array<{ name?: string; source?: string }>;
+    const parsed = JSON.parse(pluginJson) as {
+      author?: { name?: string; email?: string };
     };
 
-    expect(parsed.name).toBe("play");
-    expect(parsed.owner?.name).toBeTruthy();
-    expect(parsed.plugins).toHaveLength(1);
-    expect(parsed.plugins?.[0]?.name).toBe("play");
-    expect(parsed.plugins?.[0]?.source).toBeTruthy();
+    expect(parsed.author?.name).toBeTruthy();
+    expect(parsed.author?.email).toMatch(/@/);
   });
 
   it('snake SKILL.md has frontmatter name="snake" and description mentions "play snake" and "/play:snake"', () => {
     const skillMarkdown = readFileSync(
-      new URL("../../play/plugin/skills/snake/SKILL.md", import.meta.url),
+      new URL("../../play/skills/snake/SKILL.md", import.meta.url),
       "utf8",
     );
     const frontmatterMatch = skillMarkdown.match(/^---\r?\n([\s\S]*?)\r?\n---/);
