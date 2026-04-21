@@ -1,6 +1,19 @@
-# play/ — Claude `/play` plugin
+# play/ — Claude `/play` plugin marketplace
 
-This directory is the source for the Claude `/play` plugin that ships the Snake game. Run `npm run build:play` from the repo root to produce `dist-play/play.plugin` and `dist-play/play.zip` (same bytes, two extensions).
+This directory is a Claude plugin **marketplace** shipping one plugin (`play`) that provides one skill (`snake`). The marketplace wrapper is what makes the archive installable — a bare `plugin.json` alone is not accepted by Claude's plugin system, which is why uploads fail with "upload failed" if the archive is missing `.claude-plugin/marketplace.json`.
+
+Layout:
+```
+play/
+├── .claude-plugin/
+│   ├── marketplace.json  ← makes the archive installable
+│   └── plugin.json       ← the plugin manifest
+├── skills/
+│   └── snake/SKILL.md
+└── pack.sh
+```
+
+Run `npm run build:play` from the repo root to produce `dist-play/play.plugin` and `dist-play/play.zip` (same archive bytes under two extensions).
 
 ## Install
 
@@ -10,6 +23,12 @@ This directory is the source for the Claude `/play` plugin that ships the Snake 
 1. Organization settings → Plugins
 2. "Add plugins" → "Upload a file"
 3. Pick `play.zip`
+
+**Local install from a clone** (developer flow):
+```bash
+claude plugin marketplace add "$(pwd)/play" --scope local
+claude plugin install play@play --scope local
+```
 
 `play.plugin` and `play.zip` are literally the same archive bytes; the dual extension is a workaround for the upload dialog's file-filter, not a repackaging.
 

@@ -1,0 +1,21 @@
+{
+  "name": "play",
+  "owner": {
+    "name": "KjellKod"
+  },
+  "metadata": {
+    "description": "A game launcher for Claude. Each game is a skill invoked as /play:<game>.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "play",
+      "source": "./",
+      "description": "Play classic games inline in Claude. Currently ships: Snake (/play:snake).",
+      "version": "0.1.0",
+      "author": {
+        "name": "KjellKod"
+      }
+    }
+  ]
+}
