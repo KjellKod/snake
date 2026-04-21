@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "npm run build:app && npm run build:play && sh ./scripts/copy-download-artifacts.sh",
+    "build:app": "tsc && vite build",
     "build:single": "tsc && BUILD_SINGLE=1 vite build && sh ./scripts/print-dist-single-summary.sh",
+    "build:play": "npm run build:single && sh ./play/pack.sh",
     "preview": "vite preview",
-    "test": "vitest run",
-    "build:play": "npm run build:single && sh ./play/pack.sh"
+    "test": "vitest run"
   },
   "dependencies": {
     "react": "^18.2.0",

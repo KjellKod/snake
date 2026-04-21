@@ -1,6 +1,6 @@
 import { playHoverSound, playClickSound } from "../audio/uiSounds";
 
-const DOWNLOAD_BASE_URL = "https://kjellkod.github.io/snake/";
+const DOWNLOAD_BASE_URL = import.meta.env.BASE_URL;
 
 interface StartScreenProps {
   onStart: () => void;
@@ -43,7 +43,10 @@ export function StartScreen({ onStart, onOpenSettings }: StartScreenProps) {
       >
         Settings
       </button>
-      <div className="download-panel" aria-label="Download and install">
+      <details className="install-panel">
+        <summary onClick={playClickSound} onMouseEnter={playHoverSound}>
+          Install Snake
+        </summary>
         <div className="download-actions">
           <a
             className="download-link"
@@ -51,7 +54,7 @@ export function StartScreen({ onStart, onOpenSettings }: StartScreenProps) {
             download="snake.html"
             onMouseEnter={playHoverSound}
           >
-            Single HTML
+            Download single HTML
           </a>
           <a
             className="download-link plugin"
@@ -59,9 +62,13 @@ export function StartScreen({ onStart, onOpenSettings }: StartScreenProps) {
             download="snake.zip"
             onMouseEnter={playHoverSound}
           >
-            Claude Plugin ZIP
+            Download Claude plugin ZIP
           </a>
         </div>
+        <p className="download-note">
+          The single HTML file opens by itself and can be dragged into Claude as
+          an Artifact.
+        </p>
         <ol className="install-steps">
           <li>
             Claude Plugins directory -&gt; Personal -&gt; Local uploads -&gt; +
@@ -69,7 +76,7 @@ export function StartScreen({ onStart, onOpenSettings }: StartScreenProps) {
           </li>
           <li>Pick snake.zip, then type /play:snake or say "play snake".</li>
         </ol>
-      </div>
+      </details>
     </div>
   );
 }

@@ -42,7 +42,7 @@ The archive is distributed with a `.zip` extension because Claude's current uplo
 
 - `npm install` installs the project dependencies from `package.json`.
 - `npm run dev` starts the Vite development server for local development.
-- `npm run build` creates the production build in `dist/` and runs TypeScript checks.
+- `npm run build` creates the production build in `dist/`, including `standalone.html` and `snake.zip`, and runs TypeScript checks.
 - `npm run preview` serves the built `dist/` output locally so you can test the production build.
 
 Typical local development flow:
@@ -75,7 +75,8 @@ Click **Start** to begin. One player dying doesn't end the game — the survivor
 
 ```bash
 npm run dev      # Start dev server
-npm run build    # Production build
+npm run build    # Production build with download artifacts
+npm run build:play # Build dist-play/snake.zip
 npm run preview  # Preview production build
 npm test         # Run unit tests
 ```
