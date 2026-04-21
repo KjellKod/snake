@@ -6,7 +6,7 @@ const { readFileSync } = require("fs");
 describe("play plugin contract", () => {
   it('plugin.json parses with name="play" and semver version', () => {
     const pluginJson = readFileSync(
-      new URL("../../play/.claude-plugin/plugin.json", import.meta.url),
+      new URL("../../play/plugin/.claude-plugin/plugin.json", import.meta.url),
       "utf8",
     );
     const parsed = JSON.parse(pluginJson) as { name?: string; version?: string };
@@ -35,7 +35,7 @@ describe("play plugin contract", () => {
 
   it('snake SKILL.md has frontmatter name="snake" and description mentions "play snake" and "/play:snake"', () => {
     const skillMarkdown = readFileSync(
-      new URL("../../play/skills/snake/SKILL.md", import.meta.url),
+      new URL("../../play/plugin/skills/snake/SKILL.md", import.meta.url),
       "utf8",
     );
     const frontmatterMatch = skillMarkdown.match(/^---\r?\n([\s\S]*?)\r?\n---/);

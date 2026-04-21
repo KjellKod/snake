@@ -4,7 +4,7 @@ set -eu
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 REPO_ROOT="$(CDPATH= cd -- "${SCRIPT_DIR}/.." && pwd)"
 SOURCE_HTML="${REPO_ROOT}/dist-single/index.html"
-ASSET_HTML="${REPO_ROOT}/play/skills/snake/assets/snake.html"
+ASSET_HTML="${REPO_ROOT}/play/plugin/skills/snake/assets/snake.html"
 PLUGIN_PATH="${REPO_ROOT}/dist-play/play.plugin"
 ZIP_PATH="${REPO_ROOT}/dist-play/play.zip"
 
@@ -13,7 +13,7 @@ if [ ! -f "${SOURCE_HTML}" ]; then
   exit 1
 fi
 
-mkdir -p "${REPO_ROOT}/play/skills/snake/assets"
+mkdir -p "${REPO_ROOT}/play/plugin/skills/snake/assets"
 cp "${SOURCE_HTML}" "${ASSET_HTML}"
 
 mkdir -p "${REPO_ROOT}/dist-play"

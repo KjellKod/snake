@@ -2,14 +2,16 @@
 
 This directory is a Claude plugin **marketplace** shipping one plugin (`play`) that provides one skill (`snake`). The marketplace wrapper is what makes the archive installable — a bare `plugin.json` alone is not accepted by Claude's plugin system, which is why uploads fail with "upload failed" if the archive is missing `.claude-plugin/marketplace.json`.
 
-Layout:
+Layout (matches Anthropic's canonical marketplace-with-subdirectory plugin pattern):
 ```
 play/
 ├── .claude-plugin/
-│   ├── marketplace.json  ← makes the archive installable
-│   └── plugin.json       ← the plugin manifest
-├── skills/
-│   └── snake/SKILL.md
+│   └── marketplace.json        ← makes the archive installable (points at ./plugin)
+├── plugin/                     ← the single plugin
+│   ├── .claude-plugin/
+│   │   └── plugin.json         ← plugin name="play" → /play:<skill>
+│   └── skills/
+│       └── snake/SKILL.md      ← skill name="snake" → /play:snake
 └── pack.sh
 ```
 
