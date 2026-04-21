@@ -84,11 +84,11 @@ cp dist-single/index.html skills/snake/assets/snake.html
 
 ## Packaging
 
-A `.plugin` file is a **zip** created from inside the plugin directory (paths are relative to the plugin root, not the parent). This is different from `.skill` files which include the folder name in paths.
+The plugin is a **zip** created from inside the plugin directory (paths are relative to the plugin root, not the parent). Use the `.zip` extension — Claude's current plugin upload dialog accepts `.zip` and rejects other extensions like `.plugin`.
 
 ```bash
 cd /path/to/play
-zip -r play.plugin . -x "*.DS_Store"
+zip -r play.zip . -x "*.DS_Store"
 ```
 
 Or with Python:
@@ -98,7 +98,7 @@ import zipfile
 from pathlib import Path
 
 plugin_path = Path("/path/to/play")
-out = Path("play.plugin")
+out = Path("play.zip")
 
 with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zipf:
     for f in plugin_path.rglob("*"):
@@ -107,7 +107,7 @@ with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zipf:
             zipf.write(f, arcname)
 ```
 
-Double-click or drag the `.plugin` file into Claude to install.
+Install via: Plugins directory → Personal → Local uploads → + → Upload local plugin → pick `play.zip`.
 
 ## Adding More Games
 
@@ -147,7 +147,7 @@ Launch the Tetris game for the user.
 
 3. Build the game as a single HTML file and copy it to `skills/tetris/assets/tetris.html`
 
-4. Repackage and reinstall the `.plugin` file
+4. Repackage and reinstall `play.zip`
 
 No changes needed to `plugin.json` or the snake skill — the plugin system auto-discovers new skill folders.
 
@@ -157,14 +157,14 @@ No changes needed to `plugin.json` or the snake skill — the plugin system auto
 npm run build:single \
   && cp dist-single/index.html skills/snake/assets/snake.html \
   && cd /path/to/play \
-  && zip -r play.plugin . -x "*.DS_Store" \
-  && echo "Done: play.plugin"
+  && zip -r play.zip . -x "*.DS_Store" \
+  && echo "Done: play.zip"
 ```
 
 ## Gotchas
 
-- **Plugin uses `.plugin`, not `.skill`.** A `.skill` file packages a single skill. A `.plugin` file packages a plugin with multiple sub-skills.
-- **Zip from inside the directory.** Unlike `.skill` files (which include the folder name in archive paths), `.plugin` files are zipped from inside the plugin root. Paths start with `.claude-plugin/`, `skills/`, etc.
+- **Use `.zip` as the archive extension.** Claude's Upload Local Plugin dialog currently accepts `.zip` and rejects `.plugin` / `.skill`. The archive itself is a standard plugin bundle regardless of extension.
+- **Zip from inside the directory.** The archive must have `.claude-plugin/`, `skills/`, etc. as top-level entries — no wrapping folder.
 - **`name` in plugin.json = prefix.** Whatever you set as `name` becomes the `/name:` prefix for all sub-skills.
 - **`name` in SKILL.md = suffix.** The skill's `name` frontmatter becomes the part after the colon.
 - **Single-file HTML only.** Multi-file assets won't render in Claude's artifact viewer. Use `vite-plugin-singlefile` or equivalent.

@@ -1,6 +1,6 @@
 # play/ — Claude `/play` plugin
 
-This directory is the source for the Claude `/play` plugin that ships the Snake game. Run `npm run build:play` from the repo root to produce `dist-play/play.plugin` and `dist-play/play.zip` (same archive bytes under two extensions).
+This directory is the source for the Claude `/play` plugin that ships the Snake game. Run `npm run build:play` from the repo root to produce `dist-play/play.zip`.
 
 Layout matches Anthropic's own `claude-plugins-official` repo for a skills-only plugin (e.g. `plugins/claude-code-setup/`):
 
@@ -17,20 +17,15 @@ play/
 
 ## Install
 
-**Claude Desktop** — drag `play.plugin` into the Claude Desktop window.
+1. Download `play.zip` from the latest Release (or build locally with `npm run build:play`).
+2. In Claude (Desktop or Cowork): **Plugins directory → Personal → Local uploads → +** → **Upload local plugin** → pick `play.zip`.
+3. In any conversation, type `/play:snake` or say "play snake".
 
-**Claude web (Personal → Local uploads)** — Plugins directory → **Personal** tab → **Local uploads** → **+** → **Upload local plugin** → pick `play.plugin` (or `play.zip` if the `.plugin` extension is rejected on your platform).
-
-**Local install from a clone** (developer flow, via a tiny marketplace wrapper Claude Code CLI expects):
-```bash
-# Claude Code CLI marketplace install requires a marketplace.json.
-# You can script this with a temp directory — see the repo-level CI script.
-# Simpler: clone, build, drag the resulting .plugin into Claude Desktop.
-```
+The artifact uses a `.zip` extension because the current upload dialog only accepts `.zip` — the contents are a standard Claude plugin bundle.
 
 ## Trigger
 
-Once installed, in any Claude conversation:
+Once installed, in any conversation:
 - `/play:snake`
 - "play snake"
 - "let's play snake"
