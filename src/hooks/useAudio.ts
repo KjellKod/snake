@@ -86,6 +86,12 @@ export function useAudio() {
   const checkInvincibilityExpiry = useCallback((state: GameState) => {
     if (isInvincibilityMusicActive() && !anyPlayerInvincible(state)) {
       stopInvincibilityMusic();
+      updateMusicTempo(
+        state.tickRate,
+        BASE_TICK_RATE,
+        MAX_TICK_RATE,
+        state.settings.musicMode,
+      );
     }
   }, []);
 

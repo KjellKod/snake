@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:single": "tsc && BUILD_SINGLE=1 vite build && sh ./scripts/print-dist-single-summary.sh",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:play": "npm run build:single && sh ./play/pack.sh"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -19,6 +21,7 @@
     "@vitejs/plugin-react": "^4.2.1",
     "typescript": "^5.3.3",
     "vite": "^7.3.2",
+    "vite-plugin-singlefile": "^2.3.3",
     "vitest": "^4.1.0"
   }
 }

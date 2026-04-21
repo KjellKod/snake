@@ -2,6 +2,9 @@ import { describe, it, expect } from "vitest";
 import {
   createInitialState,
   tick,
+  BASE_TICK_RATE,
+  MEDIUM_TICK_RATE,
+  SLOW_TICK_RATE,
   INVINCIBILITY_DURATION_MS,
   POWER_UP_INTERVAL,
   SLOWDOWN_DURATION_MS,
@@ -40,6 +43,21 @@ describe("createInitialState", () => {
     expect(state.players[1].snake.alive).toBe(true);
     expect(state.food.spawnIndex).toBe(1);
     expect(state.food.kind).toBe("normal");
+  });
+
+  it("applies selected mono speed to the initial tick rate", () => {
+    expect(
+      createInitialState({ ...createDefaultSettings(), monoSpeed: "slow" }).tickRate,
+    ).toBe(SLOW_TICK_RATE);
+    expect(
+      createInitialState({ ...createDefaultSettings(), monoSpeed: "medium" }).tickRate,
+    ).toBe(MEDIUM_TICK_RATE);
+    expect(
+      createInitialState({ ...createDefaultSettings(), monoSpeed: "fast" }).tickRate,
+    ).toBe(BASE_TICK_RATE);
+    expect(
+      createInitialState({ ...createDefaultSettings(), monoSpeed: "accelerating" }).tickRate,
+    ).toBe(SLOW_TICK_RATE);
   });
 });
 

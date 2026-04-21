@@ -1,5 +1,10 @@
 .quest/
+*/*/__pycache__
+.DS_Store
 .ws/
 node_modules/
 dist/
+dist-single/
 .vite/
+dist-play/
+play/skills/*/assets/*.html
