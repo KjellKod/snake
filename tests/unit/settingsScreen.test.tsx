@@ -54,6 +54,12 @@ describe("StartScreen", () => {
 
     expect(markup).toContain("Start Game");
     expect(markup).toContain("Settings");
+    expect(markup).toContain("Single HTML");
+    expect(markup).toContain("Claude Plugin ZIP");
+    expect(markup).toContain("https://kjellkod.github.io/snake/standalone.html");
+    expect(markup).toContain("https://kjellkod.github.io/snake/snake.zip");
+    expect(markup).toContain("Upload local plugin");
+    expect(markup).toContain("/play:snake");
 
     settingsButton.props.onClick();
 

@@ -32,8 +32,8 @@ npm run build:single
 The `/play` plugin bundles Snake as a Claude game skill so users can launch it with `/play:snake` or by saying "play snake". For authoring additional games later, see [docs/CREATING_A_PLAY_SKILL.md](docs/CREATING_A_PLAY_SKILL.md).
 
 **Install (Claude Desktop / Cowork):**
-1. Download **[`play.zip`](https://github.com/KjellKod/snake/releases/latest)** from the latest Release.
-2. In Claude: **Plugins directory → Personal → Local uploads → +** → **Upload local plugin** → pick `play.zip`.
+1. Download **[`snake.zip`](https://kjellkod.github.io/snake/snake.zip)** from the game page or the latest Release.
+2. In Claude: **Plugins directory → Personal → Local uploads → +** → **Upload local plugin** → pick `snake.zip`.
 3. In any conversation, type `/play:snake` or say "play snake".
 
 The archive is distributed with a `.zip` extension because Claude's current upload dialog only accepts `.zip`. Internally it's a standard Claude plugin bundle (`.claude-plugin/plugin.json` + `skills/snake/`).

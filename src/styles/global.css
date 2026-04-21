@@ -46,8 +46,10 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 30px;
+  gap: 22px;
   text-align: center;
+  width: min(720px, calc(100vw - 24px));
+  padding: 24px 0;
 }
 
 .start-screen h1 {
@@ -113,6 +115,66 @@ body {
 .settings-button {
   font-size: 1rem;
   padding: 10px 28px;
+}
+
+.download-panel {
+  display: grid;
+  gap: 12px;
+  width: min(560px, 100%);
+}
+
+.download-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.download-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 0, 0.65);
+  color: var(--neon-yellow);
+  font-family: inherit;
+  font-size: 0.85rem;
+  line-height: 1.25;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 10px rgba(255, 255, 0, 0.35);
+  transition: all 0.2s ease;
+}
+
+.download-link.plugin {
+  border-color: rgba(255, 0, 255, 0.6);
+  color: var(--neon-magenta);
+  text-shadow: var(--glow-magenta);
+}
+
+.download-link:hover,
+.download-link:focus-visible {
+  background: rgba(255, 255, 0, 0.08);
+  box-shadow: 0 0 18px rgba(255, 255, 0, 0.28);
+  outline: none;
+}
+
+.download-link.plugin:hover,
+.download-link.plugin:focus-visible {
+  background: rgba(255, 0, 255, 0.08);
+  box-shadow: 0 0 18px rgba(255, 0, 255, 0.28);
+}
+
+.install-steps {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  text-align: left;
 }
 
 .settings-screen {
@@ -363,8 +425,35 @@ canvas {
 }
 
 @media (max-width: 640px) {
+  .start-screen {
+    gap: 16px;
+    justify-content: flex-start;
+    padding: 22px 0 32px;
+  }
+
   .start-screen h1 {
     font-size: 2.5rem;
+  }
+
+  body:has(.start-screen) {
+    overflow: auto;
+  }
+
+  body:has(.start-screen) #root {
+    align-items: flex-start;
+  }
+
+  .download-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .download-link {
+    min-height: 40px;
+    font-size: 0.78rem;
+  }
+
+  .install-steps {
+    font-size: 0.72rem;
   }
 
   body:has(.settings-screen) {
