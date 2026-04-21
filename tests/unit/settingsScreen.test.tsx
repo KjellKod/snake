@@ -54,6 +54,16 @@ describe("StartScreen", () => {
 
     expect(markup).toContain("Start Game");
     expect(markup).toContain("Settings");
+    expect(markup).toContain("Install Snake");
+    expect(markup).toContain("Download single HTML");
+    expect(markup).toContain("Download Claude plugin ZIP");
+    expect(markup).toContain(
+      "The single HTML file opens by itself and can be dragged into Claude as an Artifact.",
+    );
+    expect(markup).toContain(`${import.meta.env.BASE_URL}standalone.html`);
+    expect(markup).toContain(`${import.meta.env.BASE_URL}snake.zip`);
+    expect(markup).toContain("Upload local plugin");
+    expect(markup).toContain("/play:snake");
 
     settingsButton.props.onClick();
 
