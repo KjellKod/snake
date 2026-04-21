@@ -24,4 +24,5 @@ jobs:
         with:
           files: |
             dist-play/play.plugin
+            dist-play/play.zip
             dist-play/snake.html
