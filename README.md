@@ -18,6 +18,7 @@ Open http://localhost:5173 in your browser.
 ## Standalone single-file build
 
 Download [**standalone.html**](https://kjellkod.github.io/snake/standalone.html) — one self-contained HTML file (~178 KB) with React, game logic, and CSS all inlined. Double-click to play. No server, no install, works offline. Drag it into a Claude conversation (Claude.ai or Claude Desktop) and it renders as a playable Artifact right in the chat.
+You can also download `snake.html` directly from the [latest Release](https://github.com/KjellKod/snake/releases/latest).
 
 Build it yourself with:
 
@@ -26,6 +27,13 @@ npm run build:single
 # → dist-single/index.html
 ```
 
+## Install as a Claude /play plugin
+
+The `/play` plugin bundles Snake as a Claude game skill so users can launch it with `/play:snake` or by saying "play snake"; download `play.plugin` from Releases, install it in Claude, and use it in any conversation. For authoring additional games later, see [docs/CREATING_A_PLAY_SKILL.md](docs/CREATING_A_PLAY_SKILL.md).
+
+1. Download `play.plugin` from the [latest Release](https://github.com/KjellKod/snake/releases/latest).
+2. Double-click `play.plugin`, or drag it into Claude Desktop to install.
+3. In any conversation, type `/play:snake` or say "play snake".
 
 ## What Each Command Does
 

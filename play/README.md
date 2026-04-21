@@ -1,0 +1,1 @@
+This directory contains the Claude `/play` plugin packaging for Snake: build `play.plugin`, then install it by downloading from the latest GitHub Release and either double-clicking it or dragging it into Claude Desktop to launch with `/play:snake`; if you want to author additional games in this plugin later, follow `docs/CREATING_A_PLAY_SKILL.md`.
