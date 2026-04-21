@@ -1,7 +1,5 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-
-declare const require: (id: string) => any;
-const { readFileSync } = require("fs");
 
 describe("play plugin contract", () => {
   it('plugin.json parses with name="play" and semver version', () => {
